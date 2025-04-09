@@ -3,10 +3,14 @@ import ProductListView from './views/ProductListView.vue'
 import { Product } from './interfaces/Product'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap';
+import DollarValue  from "./components/DollarValue.vue"
+
+// TODO Localize fonts so they work offline
 
 export default {
   components:{
-    ProductListView
+    ProductListView,
+    DollarValue
   },
   data() {
     return {
@@ -14,8 +18,8 @@ export default {
         name: '',
         description: '',
         quantity: 0,
-        purchaseDate: new Date(),
-        expiryDate: new Date(),
+        purchaseDate: "", // This was previously a new Date(), in case it throws an error later
+        expiryDate: "",
         cost: 0
       } as Product,
       products: [] as Product[]
@@ -38,6 +42,7 @@ export default {
 
 <template>
   <div id="app">
+    <DollarValue />
     <h1>Inventario</h1>
     <ProductListView />
   </div>
@@ -50,6 +55,9 @@ export default {
   text-align: center;
   margin-top: 40px;
   width: 100%;
+  min-width: 90%;
+  height: 100%;
+  min-height: 90%;
 }
 input {
   padding: 8px;

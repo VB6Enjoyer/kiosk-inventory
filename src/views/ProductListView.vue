@@ -3,7 +3,10 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 import AddProductModal from '../components/AddProductModal.vue';
 import ConfirmationDialog from "../components/ConfirmationDialog.vue";
 import type { Product } from "../interfaces/Product.ts";
-import { LucideTrash2 } from 'lucide-vue-next';
+import { LucideTrash2, ArrowDownAZ, ArrowUpZA, ArrowDown01, ArrowUp10, CalendarArrowDown, CalendarArrowUp } from 'lucide-vue-next';
+import { areObjectsEqual } from '../utilities/auxFunctions.ts';
+
+// * All //@ts-ignore are to prevent a pesky error which ignores that "window" refers to the Electron window
 
 const isModalOpen = ref(false);
 const products = ref<Product[]>([]);
@@ -12,12 +15,32 @@ const productIdToDelete = ref<number | null>(null);
 const editingProductId = ref<number | null>(null);
 const newProductValue = ref<string>("");
 const editingField = ref<string | null>("");
+const sortingType = ref<string | undefined>("");
 let isSaving = false; // Flag to prevent multiple calls
+let sortSetting = 0; // 0 = default (sort by ID), 1 = A-Z/0-9, 2 = Z-A/9-0
+
+const sortFunctions = {
+    name: (a: any, b: any, asc: boolean) => asc 
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name),
+    quantity: (a: any, b: any, asc: boolean) => asc 
+        ? a.quantity - b.quantity
+        : b.quantity - a.quantity,
+    purchaseDate: (a: any, b: any, asc: boolean) => asc 
+        ? new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime()
+        : new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime(),
+    expiryDate: (a: any, b: any, asc: boolean) => asc 
+        ? new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime()
+        : new Date(b.expiryDate).getTime() - new Date(a.expiryDate).getTime(),
+    cost: (a: any, b: any, asc: boolean) => asc 
+        ? a.cost - b.cost
+        : b.cost - a.cost,
+};
 
 // TODO Implement form control for editing inputs
-// TODO Implement sorting
 // TODO Implement filtering
 // TODO Implement search
+// TODO Do extensive testing and write down any bugs to fix
 
 function openModal() {
     isModalOpen.value = true;
@@ -27,26 +50,39 @@ function closeModal() {
     isModalOpen.value = false;
 }
 
-async function loadProducts(){
+async function loadProducts(sortBy?: string, keepSort: boolean = false) {
     // @ts-ignore
     products.value = await window.api.loadProducts();
+
+    // Update sortingSetting and cycle sortSetting
+    if (sortingType.value !== sortBy) {
+        sortingType.value = sortBy;
+        sortSetting = 1; // Start with ascending
+    } else if (!keepSort && sortingType.value) {
+        sortSetting = (sortSetting + 1) % 3;
+        if (sortSetting === 0) {
+            sortingType.value = undefined;
+        }
+    }
+
+    // Apply sorting if a sortBy is active
+    const activeSort = sortingType.value;
+    if (activeSort && sortFunctions[activeSort]) {
+        const ascending = sortSetting === 1;
+        products.value.sort((a, b) => sortFunctions[activeSort](a, b, ascending));
+    }
 }
 
 async function addProduct(product: Product) {
     // @ts-ignore
     const savedProducts = await window.api.saveProduct(product);
     closeModal();
-    loadProducts();
+    loadProducts(sortingType.value, true);
 }
 
 async function deleteProduct(id: number){
-    if(window.confirm("¿Estás seguro que deseas eliminar este producto?"), "Si", "Cancelar"){
-        // @ts-ignore
-        await window.api.deleteProduct(id);
-        loadProducts();
-    } else{
-        return;
-    }
+    // @ts-ignore
+    await window.api.deleteProduct(id);
 }
 
 function showDeleteConfirmation(id: number) {
@@ -57,7 +93,7 @@ function showDeleteConfirmation(id: number) {
 async function confirmDelete() {
     if (productIdToDelete.value !== null) {
         await deleteProduct(productIdToDelete.value);
-        loadProducts();
+        loadProducts(sortingType.value, true);
     }
     isConfirmDialogVisible.value = false;
 }
@@ -98,11 +134,15 @@ async function updateProduct(productId: number) {
                 cost: editingField.value == "cost" ? Number(newProductValue.value) : product.cost,
             };
 
-            // @ts-ignore
-            await window.api.updateProduct(updatedProduct);
+            // Allows to get rid of the input when clicking outside
             editingProductId.value = null;
             editingField.value = null;
-            loadProducts();
+
+            if(areObjectsEqual(product, updatedProduct)) return; // Prevents unnecessary calls to the API
+
+            // @ts-ignore
+            await window.api.updateProduct(updatedProduct);
+            loadProducts(sortingType.value, true);
         }
 }
 
@@ -145,7 +185,7 @@ function formatDate(dateString: string): string {
 }
 
 onMounted(() => {
-    loadProducts();
+    loadProducts(sortingType.value);
 });
 
 onBeforeUnmount(() => {
@@ -163,12 +203,32 @@ onBeforeUnmount(() => {
         <table v-if="products.length" class="product-table">
             <thead>
                 <tr>
-                    <th>Nombre</th>
-                    <th>Cantidad</th>
-                    <th>Fecha de compra</th>
-                    <th>Fecha de vencimiento</th>
-                    <th>Precio</th>
-                    <th>Acciones</th>
+                    <th @click="loadProducts('name')">
+                        Nombre
+                        <ArrowDownAZ class="float-right" v-if="sortSetting === 1 && sortingType == 'name'"/>
+                        <ArrowUpZA class="float-right" v-if="sortSetting === 2 && sortingType == 'name'" />
+                    </th>
+                    <th @click="loadProducts('quantity')">
+                        Cantidad
+                        <ArrowDown01 class="float-right" v-if="sortSetting === 1 && sortingType == 'quantity'"/>
+                        <ArrowUp10 class="float-right" v-if="sortSetting === 2 && sortingType == 'quantity'" />
+                    </th>
+                    <th @click="loadProducts('purchaseDate')">
+                        Fecha de compra
+                        <CalendarArrowDown class="float-right" v-if="sortSetting === 1 && sortingType == 'purchaseDate'"/>
+                        <CalendarArrowUp class="float-right" v-if="sortSetting === 2 && sortingType == 'purchaseDate'"/>
+                    </th>
+                    <th @click="loadProducts('expiryDate')">
+                        Fecha de vencimiento
+                        <CalendarArrowDown class="float-right" v-if="sortSetting === 1 && sortingType == 'expiryDate'"/>
+                        <CalendarArrowUp class="float-right" v-if="sortSetting === 2 && sortingType == 'expiryDate'"/>
+                    </th>
+                    <th @click="loadProducts('cost')">
+                        Precio
+                        <ArrowDown01 class="float-right" v-if="sortSetting === 1 && sortingType == 'cost'"/>
+                        <ArrowUp10 class="float-right" v-if="sortSetting === 2 && sortingType == 'cost'" />
+                    </th>
+                    <th id="actions-header">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -241,6 +301,24 @@ onBeforeUnmount(() => {
     border-collapse: collapse;
 }
 
+th {
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+}
+
+#actions-header{
+    cursor: default;
+}
+
+.float-right{
+    position: absolute;
+    right: 0;
+    margin-right: 3%;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
 .close-to-expiry-red{
     background-color: rgba(255, 0, 0, 0.33);
 }
@@ -281,15 +359,31 @@ onBeforeUnmount(() => {
     font-size: 16px;
 }
 
-.product-quantity{
-    width: 10%;
+.product-name{
+    width: 25%;
 }
 
-.product-date-cell{
-    width: 18%;
+.product-quantity {
+    width: 12%;
 }
 
-.small{
+.product-purchase-date {
+    width: 17.5%
+}
+
+.product-expiry-date {
+    width: 20%;
+}
+
+.product-cost{
+    width: 13.5%;
+}
+
+.actions {
+    width: 7.5%;
+}
+
+.small {
     width: 20px;
     height: 20px;
 }

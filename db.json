@@ -31,7 +31,7 @@
       "id": 3,
       "name": "Alfajor Guaymallen",
       "description": "Dulce de leche",
-      "quantity": 5,
+      "quantity": 4,
       "purchaseDate": "2024-11-05",
       "expiryDate": "2025-04-10",
       "cost": 5000
@@ -49,10 +49,19 @@
       "id": 5,
       "name": "Test!",
       "description": "Test",
-      "quantity": 1,
+      "quantity": 2,
       "purchaseDate": "1111-11-11",
       "expiryDate": "2025-11-11",
       "cost": 100
+    },
+    {
+      "id": 12,
+      "name": "asdzxc",
+      "description": "",
+      "quantity": 50,
+      "purchaseDate": "Tue Apr 08 2025 23:14:28 GMT-0300 (hora estándar de Argentina)",
+      "expiryDate": "Tue Apr 08 2025 23:14:28 GMT-0300 (hora estándar de Argentina)",
+      "cost": 1000000
     }
   ],
   "items": [
