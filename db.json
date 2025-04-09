@@ -1,0 +1,80 @@
+{
+  "products": [
+    {
+      "id": 0,
+      "name": "Coca-Cola 2L",
+      "description": "Botella de vidrio",
+      "quantity": 8,
+      "purchaseDate": "2024-02-08",
+      "expiryDate": "2024-08-03",
+      "cost": 800
+    },
+    {
+      "id": 1,
+      "name": "Chicles Beldent",
+      "description": "Menta",
+      "quantity": 1,
+      "purchaseDate": "2025-04-04",
+      "expiryDate": "2025-12-05",
+      "cost": 3000
+    },
+    {
+      "id": 2,
+      "name": "Leche Milkaut",
+      "description": "Cartón 500ml",
+      "quantity": 8,
+      "purchaseDate": "2024-08-25",
+      "expiryDate": "2025-04-19",
+      "cost": 1500
+    },
+    {
+      "id": 3,
+      "name": "Alfajor Guaymallen",
+      "description": "Dulce de leche",
+      "quantity": 5,
+      "purchaseDate": "2024-11-05",
+      "expiryDate": "2025-04-10",
+      "cost": 5000
+    },
+    {
+      "id": 4,
+      "name": "Sprite 3L",
+      "description": "Botella de plástico",
+      "quantity": 10,
+      "purchaseDate": "2025-04-07",
+      "expiryDate": "2025-11-15",
+      "cost": 8000
+    },
+    {
+      "id": 5,
+      "name": "Test!",
+      "description": "Test",
+      "quantity": 1,
+      "purchaseDate": "1111-11-11",
+      "expiryDate": "2025-11-11",
+      "cost": 100
+    }
+  ],
+  "items": [
+    "Hello",
+    "Amerikaya!",
+    "hallo!!!",
+    "youkoso irashaimashita!",
+    {
+      "name": "2",
+      "description": "",
+      "quantity": 2,
+      "purchaseDate": "2025-04-07T02:35:34.055Z",
+      "expiryDate": "2025-04-07T02:35:34.055Z",
+      "cost": 0
+    },
+    {
+      "name": "Papas Lays",
+      "description": "Bolsa 200g",
+      "quantity": 8,
+      "purchaseDate": "2025-02-25",
+      "expiryDate": "2025-10-28",
+      "cost": 8000
+    }
+  ]
+}
