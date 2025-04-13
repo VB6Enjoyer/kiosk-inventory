@@ -5,21 +5,30 @@ import ConfirmationDialog from "../components/ConfirmationDialog.vue";
 import type { Product } from "../interfaces/Product.ts";
 import { LucideTrash2, ArrowDownAZ, ArrowUpZA, ArrowDown01, ArrowUp10, CalendarArrowDown, CalendarArrowUp } from 'lucide-vue-next';
 import { areObjectsEqual } from '../utilities/auxFunctions.ts';
+import SearchBar from '../components/SearchBar.vue';
+import { debounce } from 'lodash';
+import AdvancedSearchModal from '../components/AdvancedSearchModal.vue';
+import { AdvancedSearch } from '../interfaces/AdvancedSearch.ts';
 
 // * All //@ts-ignore are to prevent a pesky error which ignores that "window" refers to the Electron window
 
-const isModalOpen = ref(false);
+const isAddProductModalOpen = ref<boolean>(false);
+const isSearchModalOpen = ref<boolean>(false);
 const products = ref<Product[]>([]);
-const isConfirmDialogVisible = ref(false);
+const productsBackup = ref<Product[]>([]);
+const isConfirmDialogVisible = ref<boolean>(false);
 const productIdToDelete = ref<number | null>(null);
 const editingProductId = ref<number | null>(null);
 const newProductValue = ref<string>("");
 const editingField = ref<string | null>("");
 const sortingType = ref<string | undefined>("");
+const searchQuery = ref<string>("");
 let isSaving = false; // Flag to prevent multiple calls
+let isSearching = searchQuery.value.trim().length > 0;
 let sortSetting = 0; // 0 = default (sort by ID), 1 = A-Z/0-9, 2 = Z-A/9-0
 
 const sortFunctions = {
+    id: (a: Product, b: Product) => a.id - b.id,
     name: (a: any, b: any, asc: boolean) => asc 
         ? a.name.localeCompare(b.name)
         : b.name.localeCompare(a.name),
@@ -37,23 +46,105 @@ const sortFunctions = {
         : b.cost - a.cost,
 };
 
-// TODO Implement form control for editing inputs
-// TODO Implement filtering
-// TODO Implement search
-// TODO Do extensive testing and write down any bugs to fix
+const debouncedSearch = debounce((query: string) => {
+    const fixedQuery = query.toLowerCase().trim();
 
-function openModal() {
-    isModalOpen.value = true;
+    if(!fixedQuery){
+        products.value = [...productsBackup.value];
+    } else {
+        products.value = [...productsBackup.value.filter(product => 
+            product.name.toLowerCase().includes(fixedQuery) ||
+            product.description.toLowerCase().includes(fixedQuery))];
+        sortProducts(sortingType.value || "", true);
+    }
+}, 30); // This value could be changed if the app is running in a really slow computer for better performance
+        // Load, delete and modify operations have delay when searching. Might want to modify the logic to change this if necessary
+
+// TODO Implement form control for editing inputs
+// TODO Implement expiry filtering
+// TODO Implement advanced search
+// TODO For date fields, assign existing values when editing
+// TODO Do extensive testing and write down any bugs to fix
+// TODO Fix advanced search to return to normal with a button; probably replace the search bar with a button for this purpose
+
+function openAddProductModal() {
+    isAddProductModalOpen.value = true;
 }
 
-function closeModal() {
-    isModalOpen.value = false;
+function closeAddProductModal() {
+    isAddProductModalOpen.value = false;
+}
+
+function openSearchModal() {
+    isSearchModalOpen.value = true;
+}
+
+function closeSearchModal() {
+    isSearchModalOpen.value = false;
+}
+
+function search(query: string) {
+    if(searchQuery.value != query) searchQuery.value = query;
+    isSearching = searchQuery.value.trim().length > 0;
+    debouncedSearch(searchQuery.value);
+}
+
+function advancedSearch(search: AdvancedSearch){
+    let filteredProducts: Product[] = [...productsBackup.value];
+
+    if(search.name) {
+        search.exactName
+        ? filteredProducts = [...filteredProducts.filter(product => product.name.toLowerCase() == search.name)]
+        : filteredProducts = [...filteredProducts.filter(product => product.name.toLowerCase().includes(search.name))];
+    }
+
+    if(search.description){
+        search.exactDescription
+        ? filteredProducts = [...filteredProducts.filter(product => product.name.toLowerCase() == search.description)]
+        : filteredProducts = [...filteredProducts.filter(product => product.name.toLowerCase().includes(search.description))];
+    }
+
+    if(search.quantityMin != 0 && search.quantityMax != 0) filteredProducts = [...filteredProducts.filter(product => product.quantity >= search.quantityMin && product.quantity <= search.quantityMax)];
+
+    console.log(filteredProducts)
+
+    console.log(search.purchaseDateMin && search.purchaseDateMax)
+    if (search.purchaseDateMin && search.purchaseDateMax) {
+        filteredProducts = [...filteredProducts.filter(product => {
+            const productDate = new Date(product.purchaseDate);
+            const minDate = new Date(search.purchaseDateMin);
+            const maxDate = new Date(search.purchaseDateMax);
+            return productDate >= minDate && productDate <= maxDate;
+        })];
+    }
+    console.log(filteredProducts)
+
+    if (search.expiryDateMin && search.expiryDateMax) {
+        filteredProducts = [...filteredProducts.filter(product => {
+            const productDate = new Date(product.expiryDate);
+            const minDate = new Date(search.expiryDateMin);
+            const maxDate = new Date(search.expiryDateMax);
+            return productDate >= minDate && productDate <= maxDate;
+        })];
+    }
+    
+
+    if(search.costMin && search.costMax) filteredProducts = [...filteredProducts.filter(product => product.cost >= search.costMin && product.cost <= search.costMax)];
+
+    
+    if(filteredProducts.length > 0) products.value = [...filteredProducts];
 }
 
 async function loadProducts(sortBy?: string, keepSort: boolean = false) {
     // @ts-ignore
-    products.value = await window.api.loadProducts();
+    productsBackup.value = await window.api.loadProducts();
 
+    isSearching ? debouncedSearch(searchQuery.value) : products.value = [...productsBackup.value];
+
+    sortProducts(sortingType.value || "", keepSort);
+}
+
+function sortProducts(sortBy: string, keepSort: boolean = false){
     // Update sortingSetting and cycle sortSetting
     if (sortingType.value !== sortBy) {
         sortingType.value = sortBy;
@@ -62,6 +153,7 @@ async function loadProducts(sortBy?: string, keepSort: boolean = false) {
         sortSetting = (sortSetting + 1) % 3;
         if (sortSetting === 0) {
             sortingType.value = undefined;
+            products.value.sort((a, b) => sortFunctions["id"](a, b));
         }
     }
 
@@ -76,7 +168,7 @@ async function loadProducts(sortBy?: string, keepSort: boolean = false) {
 async function addProduct(product: Product) {
     // @ts-ignore
     const savedProducts = await window.api.saveProduct(product);
-    closeModal();
+    closeAddProductModal();
     loadProducts(sortingType.value, true);
 }
 
@@ -195,35 +287,43 @@ onBeforeUnmount(() => {
 
 <template>
     <div>
-        <button @click="openModal" class="open-modal-button btn btn-success">Añadir producto</button>
-        <div v-if="isModalOpen" class="modal-overlay">
-            <AddProductModal @close="closeModal" @add-product="addProduct"/>
+        <div id="functions-container">
+            <div id="search-bar-container">
+                <SearchBar id="search-bar" @search="search" @openSearchModal='openSearchModal'/>
+            </div>
+            <button @click="openAddProductModal" id="open-modal-btn" class="btn btn-success">Añadir producto</button>
+            <div v-if="isAddProductModalOpen" class="modal-overlay">
+                <AddProductModal @close="closeAddProductModal" @add-product="addProduct" />
+            </div>
+            <div v-if="isSearchModalOpen" class="modal-overlay">
+                <AdvancedSearchModal @close="closeSearchModal" @advancedSearch="advancedSearch"/>
+            </div>
         </div>
         <div id="product-table-container">
-        <table v-if="products.length" class="product-table">
+        <table class="product-table">
             <thead>
                 <tr>
-                    <th @click="loadProducts('name')">
+                    <th @click="sortProducts('name')">
                         Nombre
                         <ArrowDownAZ class="float-right" v-if="sortSetting === 1 && sortingType == 'name'"/>
                         <ArrowUpZA class="float-right" v-if="sortSetting === 2 && sortingType == 'name'" />
                     </th>
-                    <th @click="loadProducts('quantity')">
+                    <th @click="sortProducts('quantity')">
                         Cantidad
                         <ArrowDown01 class="float-right" v-if="sortSetting === 1 && sortingType == 'quantity'"/>
                         <ArrowUp10 class="float-right" v-if="sortSetting === 2 && sortingType == 'quantity'" />
                     </th>
-                    <th @click="loadProducts('purchaseDate')">
+                    <th @click="sortProducts('purchaseDate')">
                         Fecha de compra
                         <CalendarArrowDown class="float-right" v-if="sortSetting === 1 && sortingType == 'purchaseDate'"/>
                         <CalendarArrowUp class="float-right" v-if="sortSetting === 2 && sortingType == 'purchaseDate'"/>
                     </th>
-                    <th @click="loadProducts('expiryDate')">
+                    <th @click="sortProducts('expiryDate')">
                         Fecha de vencimiento
                         <CalendarArrowDown class="float-right" v-if="sortSetting === 1 && sortingType == 'expiryDate'"/>
                         <CalendarArrowUp class="float-right" v-if="sortSetting === 2 && sortingType == 'expiryDate'"/>
                     </th>
-                    <th @click="loadProducts('cost')">
+                    <th @click="sortProducts('cost')">
                         Precio
                         <ArrowDown01 class="float-right" v-if="sortSetting === 1 && sortingType == 'cost'"/>
                         <ArrowUp10 class="float-right" v-if="sortSetting === 2 && sortingType == 'cost'" />
@@ -231,7 +331,7 @@ onBeforeUnmount(() => {
                     <th id="actions-header">Acciones</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody v-if="products.length">
                 <tr v-for="(product, index) in products" :key="index" :class="{
                     'close-to-expiry-red': closeToExpiry(product.expiryDate.toString()) === 'red',
                     'close-to-expiry-yellow': closeToExpiry(product.expiryDate.toString()) === 'yellow',
@@ -281,6 +381,27 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+#functions-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+#search-bar-container {
+    max-width: 30%;
+    flex-shrink: 0;
+}
+
+#open-modal-btn {
+    position: absolute;
+    left: 50%;
+    height: 100%;
+    transform: translateX(-50%);
+}
+
 .modal-overlay {
     position: fixed;
     top: 0;

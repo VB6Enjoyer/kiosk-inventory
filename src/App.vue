@@ -6,6 +6,10 @@ import 'bootstrap';
 import DollarValue  from "./components/DollarValue.vue"
 
 // TODO Localize fonts so they work offline
+// TODO Implement a calculator?
+// TODO Implement a dark/white mode button
+// TODO Implement a battery-saving mode
+// TODO Implement an exporter to Excel
 
 export default {
   components:{

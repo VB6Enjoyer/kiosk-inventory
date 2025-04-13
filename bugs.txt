@@ -1,0 +1,1 @@
+1. Changing window sizes will make the search bar and search button keep their absolute positions and overlap with other items.

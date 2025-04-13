@@ -2,12 +2,12 @@
 import { ref, computed, defineEmits } from 'vue';
 import type { Product } from "../interfaces/Product.ts"
 
-const name = ref("");
-const description = ref("");
-const quantity = ref(0);
-const purchaseDate = ref(new Date());
-const expiryDate = ref(new Date());
-const unitCost = ref(0);
+const name = ref<string>("");
+const description = ref<string>("");
+const quantity = ref<number>(0);
+const purchaseDate = ref<Date>(new Date());
+const expiryDate = ref<Date>(new Date());
+const cost = ref<number>(0);
 
 const emit = defineEmits(['close', 'add-product']);
 
@@ -21,16 +21,15 @@ async function addProduct() {
 
     // @ts-ignore
     const products = await window.api.loadProducts();
-    console.log(products);
-
+    
     const product: Product = {
         id: products[products.length - 1].id + 1,
-        name: name.value,
-        description: description.value,
+        name: name.value.trim(),
+        description: description.value.trim(),
         quantity: quantity.value,
         purchaseDate: purchaseDate.value.toString(),
         expiryDate: expiryDate.value.toString(),
-        cost: unitCost.value
+        cost: cost.value
     };
 
     // TODO Add a toast when an item has been submitted or to show errors
@@ -92,7 +91,7 @@ function closeModal() {
                     <div class="form-group">
                         <label id="product-cost-label" for="product-cost-input" class="text-label">Costo</label>
                         <input type="number" id="product-cost-input" class="text-input form-control" placeholder="1500"
-                            v-model.number="unitCost">
+                            v-model.number="cost">
                     </div>
                 </div>
 
