@@ -10,6 +10,7 @@ import SearchBar from '../components/SearchBar.vue';
 import { debounce } from 'lodash';
 import AdvancedSearchModal from '../components/AdvancedSearchModal.vue';
 import { AdvancedSearch } from '../interfaces/AdvancedSearch.ts';
+import OptionsMenu from '../components/OptionsMenu.vue';
 
 // * All //@ts-ignore are to prevent a pesky error which ignores that "window" refers to the Electron window
 
@@ -70,10 +71,10 @@ const debouncedSearch = debounce((query: string) => {
         // Load, delete and modify operations have delay when searching. Might want to modify the logic to change this if necessary
 
 // TODO Implement form control for editing inputs
-// TODO For date fields, assign existing values when editing
+// TODO For date fields, assign existing values when editing | ACTUALLY this works as long as the dates are properly formatted in the database
 // TODO Do extensive testing and write down any bugs to fix
 // TODO Add toolboxes for guidance
-// TODO Optionally, permit normal searching while expiry-filtering
+// TODO Optionally, permit normal searching while expiry-filtering, although the logic might be problematic
 
 function openAddProductModal() {
     isAddProductModalOpen.value = true;

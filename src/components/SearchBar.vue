@@ -64,7 +64,7 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 .search-bar-icon{
-    z-index: 1000;
+    z-index: 1;
     position: absolute;
     top: 23%;
     left: 10px;
@@ -73,7 +73,7 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 #advanced-search-btn{
-    z-index: 1000;
+    z-index: 1;
     position: absolute;
     top: 0px;
     left: 307px;
