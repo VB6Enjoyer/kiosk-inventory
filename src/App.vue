@@ -10,6 +10,8 @@ import DollarValue  from "./components/DollarValue.vue"
 // TODO Implement a dark/white mode button
 // TODO Implement a battery-saving mode
 // TODO Implement an exporter to Excel
+// TODO Add CSS animations and the capacity to turn them off if necessary
+// TODO Add keyboard shortcuts for different functions (esc to close modals and undo searches, for instance)
 
 export default {
   components:{

@@ -170,16 +170,16 @@ function closeModal() {
     width: 100%;
 }
 
-#checkbox-container{
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(2, 2fr);
-    gap: 1em;
-}
-
 .checkbox,
 .checkbox-label {
     display: inline-block;
+    vertical-align: middle;
+}
+
+.checkbox {
+    width: 20px;
+    margin: 0;
+    padding: 0;
     vertical-align: middle;
 }
 
@@ -189,13 +189,6 @@ function closeModal() {
 
 .form-checkbox-label {
     width: 20%;
-}
-
-.checkbox {
-    width: 20px;
-    margin: 0;
-    padding: 0;
-    vertical-align: middle;
 }
 
 #form-container {

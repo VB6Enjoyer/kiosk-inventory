@@ -1,16 +1,27 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Search } from 'lucide-vue-next';
+import { ref, defineProps } from 'vue';
+import { Search, X } from 'lucide-vue-next';
 
 const searchValue = ref<string>("");
 const isModalOpen = ref<boolean>(false);
 
 const emit = defineEmits(['search', 'open-search-modal']);
 
+const props = defineProps<{
+    isAdvancedSearching: boolean
+}>();
+
 function simpleSearch(event: Event){
     const target = event.target as HTMLInputElement;
     searchValue.value = target.value;
     emit('search', searchValue.value);
+}
+
+function clearSearch(event: Event){
+    event.preventDefault();
+    searchValue.value = "";
+    (document.getElementById("search-input") as HTMLInputElement).value = "";
+    emit('search', "");
 }
 
 function openSearchModal(){
@@ -21,8 +32,9 @@ function openSearchModal(){
 
 <template>
     <div id="search-container">
-        <input type="search" id="search-input" @input="simpleSearch"/>
-        <Search id="search-icon" />
+        <input type="search" id="search-input" @input="simpleSearch" placeholder="Buscar" />
+        <Search v-if="searchValue.trim().length == 0 && !props.isAdvancedSearching" id="search-icon" class="search-bar-icon"/>
+        <button v-if="searchValue.trim().length > 0 || props.isAdvancedSearching" id="btn cancel-btn" @click="clearSearch"><X id="cancel-icon" class="search-bar-icon"/></button>
         <button type="button" id="advanced-search-btn" class="btn btn-primary" @click="openSearchModal">Búsqueda avanzada</button>
     </div>
 </template>
@@ -47,7 +59,11 @@ input[type="search"]::-webkit-search-cancel-button {
     display: none;
 }
 
-#search-icon{
+#cancel-icon:hover{
+    color: red;
+}
+
+.search-bar-icon{
     z-index: 1000;
     position: absolute;
     top: 23%;
