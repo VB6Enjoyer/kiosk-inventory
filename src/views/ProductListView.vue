@@ -3,7 +3,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 import AddProductModal from '../components/AddProductModal.vue';
 import ConfirmationDialog from "../components/ConfirmationDialog.vue";
 import type { Product } from "../interfaces/Product.ts";
-import { LucideTrash2, ArrowDownAZ, ArrowUpZA, ArrowDown01, ArrowUp10, CalendarArrowDown, CalendarArrowUp, Ban, TriangleAlert } from 'lucide-vue-next';
+import { LucideTrash2, ArrowDownAZ, ArrowUpZA, ArrowDown01, ArrowUp10, CalendarArrowDown, CalendarArrowUp, Ban, TriangleAlert, Grip } from 'lucide-vue-next';
 import { areObjectsEqual } from '../utilities/auxFunctions.ts';
 import SearchBar from '../components/SearchBar.vue';
 // @ts-ignore
@@ -11,11 +11,13 @@ import { debounce } from 'lodash';
 import AdvancedSearchModal from '../components/AdvancedSearchModal.vue';
 import { AdvancedSearch } from '../interfaces/AdvancedSearch.ts';
 import OptionsMenu from '../components/OptionsMenu.vue';
+import DollarValue  from "../components/DollarValue.vue"
 
 // * All //@ts-ignore are to prevent a pesky error which ignores that "window" refers to the Electron window
 
 const isAddProductModalOpen = ref<boolean>(false);
 const isSearchModalOpen = ref<boolean>(false);
+const isMenuOpen = ref<boolean>(false);
 const products = ref<Product[]>([]);
 const productsBackup = ref<Product[]>([]);
 const searchedProducts = ref<Product[]>([]);
@@ -90,6 +92,14 @@ function openSearchModal() {
 
 function closeSearchModal() {
     isSearchModalOpen.value = false;
+}
+
+function openMenu(){
+    isMenuOpen.value = true;
+}
+
+function closeMenu(){
+    isMenuOpen.value = false;
 }
 
 function search(query: string) {
@@ -384,6 +394,14 @@ onBeforeUnmount(() => {
 
 <template>
     <div>
+        <div id="upper-bar">
+            <DollarValue />
+            <button id="option-modal-btn" class="btn" @click="openMenu()"><Grip id="grip-icon"/></button>
+            <div v-if="isMenuOpen" class="modal-overlay" >
+                <OptionsMenu @close="closeMenu"/>
+            </div>
+        </div>
+        <h1>Inventario</h1>
         <div id="functions-container">
             <div id="search-bar-container">
                 <SearchBar id="search-bar" @search="search" @openSearchModal='openSearchModal' :isAdvancedSearching="isAdvancedSearching"/>
@@ -484,6 +502,19 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+#option-modal-btn{
+    color: #ffffff;
+    border: none;
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}
+
+#grip-icon {
+    width: 40px;
+    height: 40px;
+}
+
 #functions-container {
     display: flex;
     flex-direction: row;

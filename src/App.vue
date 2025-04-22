@@ -10,7 +10,7 @@ import { Grip } from 'lucide-vue-next';
 
 // TODO Localize fonts so they work offline
 // TODO Implement a calculator?
-// TODO Implement a dark/white mode button
+// TODO Implement a dark/white mode button (check the DarkTheme electron option)
 // TODO Implement a battery-saving mode
 // TODO Implement an exporter to Excel
 // TODO Add CSS animations and the capacity to turn them off if necessary
@@ -19,12 +19,6 @@ import { Grip } from 'lucide-vue-next';
 const isMenuOpen = ref<boolean>(false);
 
 export default {
-  components:{
-    ProductListView,
-    DollarValue,
-    OptionsMenu,
-    Grip
-  },
   data() {
     return {
       isMenuOpen: false,
@@ -52,8 +46,10 @@ export default {
     },
     openMenu(e: Event){
       e.preventDefault();
-      this.isMenuOpen = !this.isMenuOpen;
-      console.log("chico")
+      this.isMenuOpen = true;;
+    },
+    closeMenu(){
+      this.isMenuOpen = false;
     }
   }
 }
@@ -61,15 +57,7 @@ export default {
 
 <template>
   <div id="app">
-    <div id="upper-bar">
-      <DollarValue />
-      <button id="option-modal-btn" class="btn" @click="openMenu($event)"><Grip id="grip-icon"/></button>
-      <div v-if="isMenuOpen" class="modal-overlay">
-        <OptionsMenu  />
-      </div>
-    </div>
-    <h1>Inventario</h1>
-    <ProductListView />
+    <router-view />
   </div>
 </template>
 
@@ -85,18 +73,8 @@ export default {
   min-height: 90%;
 }
 
-#option-modal-btn{
-    color: #ffffff;
-    border: none;
-    position: absolute;
-    right: 5px;
-    top: 5px;
-}
 
-#grip-icon {
-    width: 40px;
-    height: 40px;
-}
+
 
 .modal-overlay {
     position: fixed;

@@ -1,19 +1,31 @@
 <script setup lang="ts">
-import { ref, computed, defineEmits } from 'vue';
+import { defineEmits } from 'vue';
 import { Calculator, FileSpreadsheet, FileText, FileUp, BatteryCharging, Sun, CircleHelp, LogOut } from 'lucide-vue-next';
+import { X } from 'lucide-vue-next';
+import { electronAPI }from '../utilities/electronAPI'
 
-const emit = defineEmits(['close', 'advanced-search']);
+const emit = defineEmits(['close']);
 
-function closeModal() {
+// In your OptionsMenu.vue component
+function openCalculator() {
+    electronAPI.openCalculator().then(result => console.log('Calculator opened:', result));
+}
+
+function closeMenu(e: Event) {
+    e.preventDefault();
     emit('close');
 }
 </script>
 
 <template>
     <div id="modal-container" class="modal-sm">
-        <h2 id="options-header">Opciones</h2>
+        <div id="modal-top-section">
+            <div class="spacer"></div>
+            <h2 id="options-header">Opciones</h2>
+            <button id="close-btn" class="btn" @click="closeMenu($event)"><X id="close-icon"/></button>
+        </div>
         <div id="options-menu">
-            <button id="calculator-btn" class="btn option-btn">
+            <button id="calculator-btn" class="btn option-btn" @click.prevent="openCalculator()">
                 <Calculator id="calculator-icon" class="icon"/>
                 <p class="btn-text">Calculadora</p>
             </button>
@@ -62,28 +74,63 @@ function closeModal() {
     border-radius: 5px;
 }
 
+#modal-top-section {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.spacer {
+    width: 42px;
+}
+
 #options-header {
-    padding-top: 10px;
     font-size: 36px;
+    flex: 1;
+    text-align: center;
+    margin: 0;
+}
+
+#close-btn {
+    color: #ffffff;
+    padding: 0;
+    margin-right: 7px;
+    border: none;
+}
+
+#close-btn:hover {
+    color: #ff0000;;
+}
+
+#close-icon {
+    cursor: pointer;
+    vertical-align: middle;
+    align-content: center;
+    width: 32px;
+    height: 32px;
 }
 
 #options-menu {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 2em;
-    justify-content: center;
-    align-content: center;
-    align-items: center;
-    padding: 15px 35px;
+    column-gap: 6em;
+    row-gap: 3em;
+    padding: 25px 50px 50px 50px;
 }
 
 .option-btn {
     color: #d1d1d1;
+    padding: 0;
+    width: 120px;
+    height: 80px;
+    border: none;
 }
 
 .icon {
-    width: 50px;
-    height: 50px;
+    width: 66px;
+    height: 66px;
 }
 
 #calculator-btn:hover > :first-child {
@@ -107,7 +154,7 @@ function closeModal() {
 }
 
 #color-mode-btn:hover > :first-child {
-    color: #CFAD31;
+    color: #FFEB3B;
 }
 
 #help-btn:hover > :first-child {

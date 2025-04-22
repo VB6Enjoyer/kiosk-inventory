@@ -42,6 +42,53 @@ async function createWindow() {
     }
 }
 
+let calculatorWindow;
+
+function createCalculatorWindow() {
+    // Don't create multiple instances
+    if (calculatorWindow) {
+        calculatorWindow.focus();
+        return;
+    }
+
+    calculatorWindow = new BrowserWindow({
+        width: 800,
+        height: 600,
+        title: 'Calculadora',
+        frame: true, // Remove the standard window frame
+        roundedCorners: true,
+        autoHideMenuBar: true,
+        resizable: false, // Prevent resizing
+        transparent: false,
+        alwaysOnTop: false,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.mjs'),
+            contextIsolation: true,
+            nodeIntegration: false
+        },
+        parent: mainWindow,
+        modal: false // Change to false for better usability
+    });
+
+    console.log(calculatorWindow.title);
+    console.log(isDev);
+
+    if (isDev) {
+        // Load the calculator route from your dev server
+        calculatorWindow.loadURL('http://localhost:5173/#/calculator');
+    } else {
+        // For production, we need to load the same app but with the calculator route
+        calculatorWindow.loadFile(path.join(__dirname, 'dist/index.html'), {
+            hash: 'calculator'
+        });
+    }
+
+    // Clean up when window is closed
+    calculatorWindow.on('closed', () => {
+        calculatorWindow = null;
+    });
+}
+
 app.whenReady().then(() => {
     createWindow();
     app.on('activate', () => {
@@ -66,6 +113,7 @@ ipcMain.handle('delete-product', async (event, id) => {
     await db.read();
     db.data.products = db.data.products.filter(product => product.id !== id);
     await db.write();
+    return;
 });
 
 ipcMain.handle('update-product', async (event, updatedProduct) => {
@@ -76,6 +124,25 @@ ipcMain.handle('update-product', async (event, updatedProduct) => {
         await db.write();
     }
     return db.data.products;
+});
+
+ipcMain.handle('open-calculator', () => {
+    createCalculatorWindow();
+    return true;
+});
+
+ipcMain.handle('close-calculator', () => {
+    if (calculatorWindow) {
+        calculatorWindow.close();
+    }
+    return true;
+});
+
+ipcMain.handle('minimize-calculator', () => {
+    if (calculatorWindow) {
+        calculatorWindow.minimize();
+    }
+    return true;
 });
 
 app.on('window-all-closed', function () {

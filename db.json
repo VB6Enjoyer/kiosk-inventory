@@ -46,15 +46,6 @@
       "cost": 8000
     },
     {
-      "id": 5,
-      "name": "Test!",
-      "description": "Test",
-      "quantity": 2,
-      "purchaseDate": "1111-11-11",
-      "expiryDate": "2025-11-11",
-      "cost": 100
-    },
-    {
       "id": 12,
       "name": "asdzxc",
       "description": "",

@@ -4,6 +4,7 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [vue()],
+  base: './', // Important for Electron to load assets correctly
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src')
@@ -11,5 +12,8 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist'
+  },
+  server: {
+    port: 5173
   }
 })
