@@ -8,5 +8,6 @@ interface Window {
     };
     electron: {
         openCalculator: () => Promise<boolean>;
+        closeApp: () => Promise<Boolean>
     };
 }

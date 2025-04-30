@@ -2,18 +2,26 @@
 import { defineEmits } from 'vue';
 import { Calculator, FileSpreadsheet, FileText, FileUp, BatteryCharging, Sun, CircleHelp, LogOut } from 'lucide-vue-next';
 import { X } from 'lucide-vue-next';
-import { electronAPI }from '../utilities/electronAPI'
+import { electronAPI } from '../utilities/electronAPI'
 
 const emit = defineEmits(['close']);
 
-// In your OptionsMenu.vue component
+// TODO Close the Options Menu when the calculator is opened
+
 function openCalculator() {
-    electronAPI.openCalculator().then(result => console.log('Calculator opened:', result));
+    electronAPI.openCalculator();
+    setTimeout(() => {
+        closeMenu();
+    }, 150); // Timeout for better GUI feedback
+
 }
 
-function closeMenu(e: Event) {
-    e.preventDefault();
+function closeMenu() {
     emit('close');
+}
+
+function exit() {
+    electronAPI.closeApp();
 }
 </script>
 
@@ -22,39 +30,41 @@ function closeMenu(e: Event) {
         <div id="modal-top-section">
             <div class="spacer"></div>
             <h2 id="options-header">Opciones</h2>
-            <button id="close-btn" class="btn" @click="closeMenu($event)"><X id="close-icon"/></button>
+            <button id="close-btn" class="btn" @click="closeMenu">
+                <X id="close-icon" />
+            </button>
         </div>
         <div id="options-menu">
-            <button id="calculator-btn" class="btn option-btn" @click.prevent="openCalculator()">
-                <Calculator id="calculator-icon" class="icon"/>
+            <button id="calculator-btn" class="btn option-btn" @click.prevent="openCalculator">
+                <Calculator id="calculator-icon" class="icon" />
                 <p class="btn-text">Calculadora</p>
             </button>
             <button id="excel-btn" class="btn option-btn">
-                <FileSpreadsheet id="excel-icon" class="icon"/>
+                <FileSpreadsheet id="excel-icon" class="icon" />
                 <p class="btn-text">Exportar a Excel</p>
             </button>
             <button id="pdf-btn" class="btn option-btn">
-                <FileText id="pdf-icon" class="icon"/>
+                <FileText id="pdf-icon" class="icon" />
                 <p class="btn-text">Exportar a PDF</p>
             </button>
             <button id="import-btn" class="btn option-btn">
-                <FileUp id="import-icon" class="icon"/>
+                <FileUp id="import-icon" class="icon" />
                 <p class="btn-text">Importar Excel</p>
             </button>
             <button id="battery-btn" class="btn option-btn">
-                <BatteryCharging id="battery-icon" class="icon"/>
+                <BatteryCharging id="battery-icon" class="icon" />
                 <p class="btn-text">Modo Eco</p>
             </button>
             <button id="color-mode-btn" class="btn option-btn">
-                <Sun id="color-mode-icon" class="icon"/>
+                <Sun id="color-mode-icon" class="icon" />
                 <p class="btn-text">Modo Claro</p>
             </button>
             <button id="help-btn" class="btn option-btn">
-                <CircleHelp id="help-icon" class="icon"/>
+                <CircleHelp id="help-icon" class="icon" />
                 <p class="btn-text">Ayuda</p>
             </button>
-            <button id="exit-btn" class="btn option-btn">
-                <LogOut id="exit-icon" class="icon"/>
+            <button id="exit-btn" class="btn option-btn" @click.prevent="exit">
+                <LogOut id="exit-icon" class="icon" />
                 <p class="btn-text">Salir</p>
             </button>
         </div>
@@ -101,7 +111,8 @@ function closeMenu(e: Event) {
 }
 
 #close-btn:hover {
-    color: #ff0000;;
+    color: #ff0000;
+    ;
 }
 
 #close-icon {
@@ -133,35 +144,35 @@ function closeMenu(e: Event) {
     height: 66px;
 }
 
-#calculator-btn:hover > :first-child {
+#calculator-btn:hover> :first-child {
     color: #3d3aff;
 }
 
-#excel-btn:hover > :first-child {
+#excel-btn:hover> :first-child {
     color: #1D6F42;
 }
 
-#pdf-btn:hover > :first-child {
+#pdf-btn:hover> :first-child {
     color: #D32F2F;
 }
 
-#import-btn:hover > :first-child {
+#import-btn:hover> :first-child {
     color: #388E3C;
 }
 
-#battery-btn:hover > :first-child {
+#battery-btn:hover> :first-child {
     color: #009688;
 }
 
-#color-mode-btn:hover > :first-child {
+#color-mode-btn:hover> :first-child {
     color: #FFEB3B;
 }
 
-#help-btn:hover > :first-child {
+#help-btn:hover> :first-child {
     color: #1976D2;
 }
 
-#exit-btn:hover > :first-child {
+#exit-btn:hover> :first-child {
     color: #F44336;
 }
 </style>

@@ -5,7 +5,12 @@ contextBridge.exposeInMainWorld('api', {
     loadProducts: () => ipcRenderer.invoke('load-products'),
     deleteProduct: (id) => ipcRenderer.invoke('delete-product', id),
     updateProduct: (updatedProduct) => ipcRenderer.invoke('update-product', updatedProduct),
+
+});
+
+contextBridge.exposeInMainWorld('electron', {
     openCalculator: () => ipcRenderer.invoke('open-calculator'),
     closeCalculator: () => ipcRenderer.invoke('close-calculator'),
-    minimizeCalculator: () => ipcRenderer.invoke('minimize-calculator')
-});
+    minimizeCalculator: () => ipcRenderer.invoke('minimize-calculator'),
+    closeApp: () => ipcRenderer.invoke('close-app')
+})

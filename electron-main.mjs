@@ -52,26 +52,23 @@ function createCalculatorWindow() {
     }
 
     calculatorWindow = new BrowserWindow({
-        width: 800,
-        height: 600,
+        width: 330,
+        height: 520,
         title: 'Calculadora',
-        frame: true, // Remove the standard window frame
+        frame: false, // Remove the standard window frame
         roundedCorners: true,
         autoHideMenuBar: true,
         resizable: false, // Prevent resizing
-        transparent: false,
+        transparent: true,
         alwaysOnTop: false,
         webPreferences: {
             preload: path.join(__dirname, 'preload.mjs'),
             contextIsolation: true,
             nodeIntegration: false
         },
-        parent: mainWindow,
+        parent: null,
         modal: false // Change to false for better usability
     });
-
-    console.log(calculatorWindow.title);
-    console.log(isDev);
 
     if (isDev) {
         // Load the calculator route from your dev server
@@ -94,6 +91,13 @@ app.whenReady().then(() => {
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
+});
+
+ipcMain.handle('close-app', async () => {
+    if (mainWindow) {
+        mainWindow.close();
+    }
+    return true;
 });
 
 // IPC handlers for saving and loading items

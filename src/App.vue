@@ -66,15 +66,15 @@ export default {
 #app {
   font-family: Arial, sans-serif;
   text-align: center;
-  margin-top: 40px;
+  margin-top: 0px;
   width: 100%;
-  min-width: 90%;
+  min-width: 92.5%;
   height: 100%;
-  min-height: 90%;
+  min-height: 92.5%;
+  overflow: visible !important;
+  scrollbar-width: thin !important;
+  -ms-overflow-style: thin !important;
 }
-
-
-
 
 .modal-overlay {
     position: fixed;

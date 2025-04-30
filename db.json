@@ -7,7 +7,7 @@
       "quantity": 8,
       "purchaseDate": "2024-02-08",
       "expiryDate": "2024-08-03",
-      "cost": 800
+      "cost": 13000
     },
     {
       "id": 1,
@@ -23,9 +23,9 @@
       "name": "Leche Milkaut",
       "description": "Cartón 500ml",
       "quantity": 8,
-      "purchaseDate": "2024-08-25",
-      "expiryDate": "2025-04-21",
-      "cost": 1500
+      "purchaseDate": "2024-09-25",
+      "expiryDate": "2025-05-03",
+      "cost": 9800
     },
     {
       "id": 3,
@@ -33,7 +33,7 @@
       "description": "Dulce de leche",
       "quantity": 4,
       "purchaseDate": "2024-11-05",
-      "expiryDate": "2025-04-25",
+      "expiryDate": "2025-05-10",
       "cost": 5000
     },
     {
@@ -47,11 +47,11 @@
     },
     {
       "id": 12,
-      "name": "asdzxc",
-      "description": "",
+      "name": "Alka",
+      "description": "Menta",
       "quantity": 50,
       "purchaseDate": "Tue Apr 08 2025 23:14:28 GMT-0300 (hora estándar de Argentina)",
-      "expiryDate": "Tue Apr 08 2025 23:14:28 GMT-0300 (hora estándar de Argentina)",
+      "expiryDate": "2026-02-10",
       "cost": 1000000
     },
     {
@@ -61,7 +61,7 @@
       "quantity": 8,
       "purchaseDate": "2025-02-12",
       "expiryDate": "2025-07-17",
-      "cost": 700
+      "cost": 4500
     },
     {
       "id": 14,
@@ -70,7 +70,7 @@
       "quantity": 10,
       "purchaseDate": "Fri Apr 11 2025 00:06:41 GMT-0300 (hora estándar de Argentina)",
       "expiryDate": "2025-12-28",
-      "cost": 1000
+      "cost": 4500
     },
     {
       "id": 15,
@@ -88,7 +88,7 @@
       "quantity": 10,
       "purchaseDate": "Sun Apr 13 2025 22:22:21 GMT-0300 (hora estándar de Argentina)",
       "expiryDate": "Sun Apr 13 2025 22:22:21 GMT-0300 (hora estándar de Argentina)",
-      "cost": 0
+      "cost": 10000
     }
   ],
   "items": [
