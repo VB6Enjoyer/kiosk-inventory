@@ -1,27 +1,63 @@
 <script setup lang="ts">
-import { ref, computed, defineEmits } from 'vue';
+import { ref, computed, reactive, defineEmits, watch } from 'vue';
 import type { Product } from "../interfaces/Product.ts"
 
 const name = ref<string>("");
 const description = ref<string>("");
 const quantity = ref<number>(0);
 const purchaseDate = ref<Date>(new Date());
-const expiryDate = ref<Date>(new Date());
+const expiryDate = ref<Date | String>(new Date());
+const noExpiry = ref<boolean>(false);
 const cost = ref<number>(0);
+
+// TODO Implement no expiry to products
+
+// Form validation state
+const errors = reactive({
+    name: "",
+    quantity: ""
+});
+
+// Update validation in real-time
+watch(name, (newValue) => {
+    if (newValue.trim() === "") {
+        errors.name = "El nombre es requerido";
+    } else {
+        errors.name = "";
+    }
+});
+
+watch(quantity, (newValue) => {
+    if (!newValue || newValue <= 0) {
+        errors.quantity = "La cantidad debe ser mayor que 0";
+    } else {
+        errors.quantity = "";
+    }
+});
 
 const emit = defineEmits(['close', 'add-product']);
 
-// TODO Add form control
-
 async function addProduct() {
-    if (name.value.trim() == "" || !quantity.value) {
-        // TODO Give visual feedback when fields are empty
+    // Final validation check before submission
+    if (name.value.trim() === "") {
+        errors.name = "El nombre es requerido";
+    }
+
+    if (!quantity.value || quantity.value <= 0) {
+        errors.quantity = "La cantidad debe ser mayor que 0";
+    }
+
+    if (name.value.trim() === "" || !quantity.value || quantity.value <= 0) {
         return;
+    }
+
+    if (noExpiry) {
+        expiryDate.value = "No expira";
     }
 
     // @ts-ignore
     const products = await window.api.loadProducts();
-    
+
     const product: Product = {
         id: products[products.length - 1].id + 1,
         name: name.value.trim(),
@@ -32,13 +68,12 @@ async function addProduct() {
         cost: cost.value
     };
 
-    // TODO Add a toast when an item has been submitted or to show errors
     emit('add-product', product); // Emit the product data
     closeModal();
 }
 
 const isFormValid = computed(() => {
-    return name.value.trim() !== "" && quantity.value > 0
+    return name.value.trim() !== "" && quantity.value > 0;
 });
 
 function closeModal() {
@@ -53,9 +88,15 @@ function closeModal() {
             <form id="product-form" @submit.prevent="addProduct">
                 <div class="row">
                     <div class="form-group">
-                        <label id="product-name-label" for="product-name-input" class="text-label">Nombre</label>
+                        <label id="product-name-label" for="product-name-input" class="text-label">
+                            Nombre <span class="required-field">*</span>
+                        </label>
                         <input type="text" id="product-name-input" class="text-input form-control"
-                            placeholder="Coca-Cola 2L" v-model="name">
+                            :class="{ 'input-error': errors.name }" placeholder="Coca-Cola 2L" v-model="name">
+
+                        <div class="error-container">
+                            <span v-if="errors.name" class="error-message">{{ errors.name }}</span>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -63,13 +104,18 @@ function closeModal() {
                             class="text-label">Descripción</label>
                         <input type="text" id="product-description-input" class="text-input form-control"
                             placeholder="Botella de vidrio" v-model="description">
+                        <div class="error-container"></div>
                     </div>
 
                     <div class="form-group">
-                        <label id="product-quantity-label" for="product-quantity-input"
-                            class="text-label">Unidades</label>
-                        <input type="number" id="product-quantity-input" class="text-input form-control" placeholder="6"
-                            v-model.number="quantity">
+                        <label id="product-quantity-label" for="product-quantity-input" class="text-label">
+                            Unidades <span class="required-field">*</span>
+                        </label>
+                        <input type="number" id="product-quantity-input" class="text-input form-control"
+                            :class="{ 'input-error': errors.quantity }" placeholder="6" v-model.number="quantity">
+                        <div class="error-container">
+                            <span v-if="errors.quantity" class="error-message">{{ errors.quantity }}</span>
+                        </div>
                     </div>
                 </div>
 
@@ -79,19 +125,27 @@ function closeModal() {
                             compra</label>
                         <input type="date" id="product-purchase-input" class="text-input form-control"
                             v-model="purchaseDate">
+                        <div class="error-container"></div>
                     </div>
 
                     <div class="form-group">
                         <label id="product-expiry-label" for="product-expiry-input" class="text-label">Fecha de
                             vencimiento</label>
                         <input type="date" id="product-expiry-input" class="text-input form-control"
-                            v-model="expiryDate">
+                            v-model="expiryDate" :disabled="noExpiry">
+                        <div class="no-expiry-container">
+                            <label id="no-expiry" for="no-expiry-checkbox">
+                                <input type="checkbox" id="no-expiry-checkbox" v-model="noExpiry">
+                                <span id="no-expiry-span">No expira</span>
+                            </label>
+                        </div>
                     </div>
 
                     <div class="form-group">
                         <label id="product-cost-label" for="product-cost-input" class="text-label">Costo</label>
                         <input type="number" id="product-cost-input" class="text-input form-control" placeholder="1500"
                             v-model.number="cost">
+                        <div class="error-container"></div>
                     </div>
                 </div>
 
@@ -146,24 +200,69 @@ function closeModal() {
 .text-input {
     grid-column: span 1;
     border: none;
-    background-color: #3a3a3a; /* Darker background for contrast */
-    color: #f2f2f2; /* Text color */
-    border: 1px solid #555; /* Border color for contrast */
-    padding: 5px 10px; /* Padding for spacing */
-    border-radius: 4px; /* Rounded corners */
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3); /* Subtle shadow for depth */
-    appearance: none; /* Remove default styling */
-    -webkit-appearance: none; /* Remove default styling for WebKit browsers */
-    -moz-appearance: none; /* Remove default styling for Firefox */
-    position: relative; /* Position relative for pseudo-element */
+    background-color: #3a3a3a;
+    color: #f2f2f2;
+    border: 1px solid #555;
+    padding: 5px 10px;
+    border-radius: 4px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    position: relative;
 }
 
-.text-input::placeholder{
+.text-input::placeholder {
     color: #b6b6b6;
 }
 
 .form-button {
     text-align: center;
     border: none;
+    margin-top: 0;
+}
+
+/* Form validation styles */
+.input-error {
+    border: 1px solid #ff5252 !important;
+    background-color: rgba(255, 82, 82, 0.1);
+}
+
+.error-container {
+    height: 12px;
+}
+
+.error-message {
+    color: #ff5252;
+    font-size: 12px;
+}
+
+.required-field {
+    color: #ff5252;
+    font-weight: bold;
+}
+
+.no-expiry-container {
+    height: 12px;
+}
+
+#no-expiry {
+    font-size: 16px;
+    display: flex;
+    padding-top: 2px;
+    width: 40%;
+    align-items: center;
+}
+
+#no-expiry-checkbox {
+    width: 16px;
+    margin-right: 5px;
+    transform: scale(1.2);
+}
+
+#no-expiry-span {
+    padding: 0;
+    margin-top: 2px;
+    white-space: nowrap;
 }
 </style>

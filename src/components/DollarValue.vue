@@ -111,6 +111,10 @@ onMounted(() => {
     justify-content: center;
 }
 
+.exchange-title {
+    font-size: 30px;
+}
+
 .exchange-value {
     font-size: 22px;
 }
@@ -148,7 +152,7 @@ onMounted(() => {
 }
 
 #euro-container {
-    color: #284495;
+    color: rgb(42, 71, 158);
 }
 
 #uruguayo-container {

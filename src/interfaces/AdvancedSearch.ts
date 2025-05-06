@@ -9,6 +9,7 @@ export interface AdvancedSearch {
     purchaseDateMax: string;
     expiryDateMin: string;
     expiryDateMax: string;
+    noExpiry: boolean;
     costMin: number;
     costMax: number;
 }

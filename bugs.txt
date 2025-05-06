@@ -1,4 +1,5 @@
 1. Changing window sizes will make the search bar and search button keep their absolute positions and overlap with other items.
 2. Sorting icons seem to work irregularly when using exact search.
 3. You can input dates up to 31 in months with less than 31 days when editing and submitting.
-4. When operating the calculator with decimals, floating point math fucks it, because computers can't for the love of the lord handle floating point math well. FUCK FLOATING POINT MATH.
+4. When resizing the window while the product modal is open, the right column's rows get all fucked (this is fixed by changing the padding values for #form-container)
+5. The advanced search button and search bar icon are above in the Z-Index than the confirm delete modal

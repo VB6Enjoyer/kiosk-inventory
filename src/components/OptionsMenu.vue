@@ -4,7 +4,7 @@ import { Calculator, FileSpreadsheet, FileText, FileUp, BatteryCharging, Sun, Ci
 import { X } from 'lucide-vue-next';
 import { electronAPI } from '../utilities/electronAPI'
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'export-pdf']);
 
 // TODO Close the Options Menu when the calculator is opened
 
@@ -13,7 +13,10 @@ function openCalculator() {
     setTimeout(() => {
         closeMenu();
     }, 150); // Timeout for better GUI feedback
+}
 
+function exportPDF() {
+    emit('export-pdf');
 }
 
 function closeMenu() {
@@ -30,7 +33,7 @@ function exit() {
         <div id="modal-top-section">
             <div class="spacer"></div>
             <h2 id="options-header">Opciones</h2>
-            <button id="close-btn" class="btn" @click="closeMenu">
+            <button id="close-btn" class="btn" @click.prevent="closeMenu">
                 <X id="close-icon" />
             </button>
         </div>
@@ -43,7 +46,7 @@ function exit() {
                 <FileSpreadsheet id="excel-icon" class="icon" />
                 <p class="btn-text">Exportar a Excel</p>
             </button>
-            <button id="pdf-btn" class="btn option-btn">
+            <button id="pdf-btn" class="btn option-btn" @click.prevent="exportPDF">
                 <FileText id="pdf-icon" class="icon" />
                 <p class="btn-text">Exportar a PDF</p>
             </button>

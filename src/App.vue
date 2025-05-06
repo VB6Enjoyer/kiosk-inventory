@@ -3,7 +3,7 @@ import ProductListView from './views/ProductListView.vue'
 import { Product } from './interfaces/Product'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap';
-import DollarValue  from "./components/DollarValue.vue"
+import DollarValue from "./components/DollarValue.vue"
 import OptionsMenu from './components/OptionsMenu.vue';
 import { ref } from 'vue';
 import { Grip } from 'lucide-vue-next';
@@ -44,11 +44,11 @@ export default {
         unitCost: 0
       }
     },
-    openMenu(e: Event){
+    openMenu(e: Event) {
       e.preventDefault();
       this.isMenuOpen = true;;
     },
-    closeMenu(){
+    closeMenu() {
       this.isMenuOpen = false;
     }
   }
@@ -57,7 +57,7 @@ export default {
 
 <template>
   <div id="app">
-    <router-view />
+    <router-view id="view" />
   </div>
 </template>
 
@@ -77,17 +77,17 @@ export default {
 }
 
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    backdrop-filter: blur(5px);
-    z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(5px);
+  z-index: 1000;
 }
 
 input {

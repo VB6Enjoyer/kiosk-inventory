@@ -12,8 +12,17 @@ import AdvancedSearchModal from '../components/AdvancedSearchModal.vue';
 import { AdvancedSearch } from '../interfaces/AdvancedSearch.ts';
 import OptionsMenu from '../components/OptionsMenu.vue';
 import DollarValue from "../components/DollarValue.vue"
+import html2pdf from 'html2pdf.js';
 
 // * All //@ts-ignore are to prevent a pesky error which ignores that "window" refers to the Electron window
+
+// TODO Implement form control for editing inputs
+// TODO For date fields, assign existing values when editing | ACTUALLY this works as long as the dates are properly formatted in the database
+// TODO Do extensive testing and write down any bugs to fix
+// TODO Add toolboxes for guidance
+// TODO Optionally, permit normal searching while expiry-filtering, although the logic might be problematic
+// TODO Maybe offer the possibility to choose page size when exporting to PDF
+// TODO Add a currency converter?
 
 const isAddProductModalOpen = ref<boolean>(false);
 const isSearchModalOpen = ref<boolean>(false);
@@ -29,6 +38,7 @@ const editingField = ref<string | null>("");
 const sortingType = ref<string | undefined>("");
 const searchQuery = ref<string>("");
 const advancedSearchBackup = ref<AdvancedSearch>();
+const pdfContent = ref<HTMLElement | null>(null);
 let isSaving: boolean = false; // Flag to prevent multiple calls
 let isSearching: boolean = searchQuery.value.trim().length > 0;
 let isAdvancedSearching: boolean = false;
@@ -47,9 +57,19 @@ const sortFunctions = {
     purchaseDate: (a: any, b: any, asc: boolean) => asc
         ? new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime()
         : new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime(),
-    expiryDate: (a: any, b: any, asc: boolean) => asc
-        ? new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime()
-        : new Date(b.expiryDate).getTime() - new Date(a.expiryDate).getTime(),
+    expiryDate: (a: any, b: any, asc: boolean) => {
+        const NO_EXPIRA = "no expira";
+        const aNoExpira = typeof a.expiryDate === "string" && a.expiryDate.trim().toLowerCase() === NO_EXPIRA;
+        const bNoExpira = typeof b.expiryDate === "string" && b.expiryDate.trim().toLowerCase() === NO_EXPIRA;
+
+        if (aNoExpira && bNoExpira) return 0;
+        if (aNoExpira) return asc ? 1 : -1; // "no expira" goes last in ascending, first in descending
+        if (bNoExpira) return asc ? -1 : 1;
+
+        const aTime = new Date(a.expiryDate).getTime();
+        const bTime = new Date(b.expiryDate).getTime();
+        return asc ? aTime - bTime : bTime - aTime;
+    },
     cost: (a: any, b: any, asc: boolean) => asc
         ? a.cost - b.cost
         : b.cost - a.cost,
@@ -71,12 +91,6 @@ const debouncedSearch = debounce((query: string) => {
     searchedProducts.value = [...products.value];
 }, 30); // This value could be changed if the app is running in a really slow computer for better performance
 // Load, delete and modify operations have delay when searching. Might want to modify the logic to change this if necessary
-
-// TODO Implement form control for editing inputs
-// TODO For date fields, assign existing values when editing | ACTUALLY this works as long as the dates are properly formatted in the database
-// TODO Do extensive testing and write down any bugs to fix
-// TODO Add toolboxes for guidance
-// TODO Optionally, permit normal searching while expiry-filtering, although the logic might be problematic
 
 function openAddProductModal() {
     isAddProductModalOpen.value = true;
@@ -136,12 +150,18 @@ function advancedSearch(search: AdvancedSearch) {
         })];
     }
 
-    if (search.expiryDateMin && search.expiryDateMax) {
+    if (search.expiryDateMin && search.expiryDateMax && !search.noExpiry) {
         filteredProducts = [...filteredProducts.filter(product => {
             const productDate = new Date(product.expiryDate);
             const minDate = new Date(search.expiryDateMin);
             const maxDate = new Date(search.expiryDateMax);
             return productDate >= minDate && productDate <= maxDate;
+        })];
+    }
+
+    if (search.noExpiry) {
+        filteredProducts = [...filteredProducts.filter(product => {
+            return product.expiryDate == "No expira";
         })];
     }
 
@@ -303,14 +323,14 @@ function cancelDelete() {
 
 function editField(productId: number, currentValue: string, field: string) {
     editingProductId.value = productId;
-    newProductValue.value = currentValue;
+    if (currentValue.length > 0) newProductValue.value = currentValue.trim();
     editingField.value = field;
     isSaving = false;
 
-    document.removeEventListener('click', handleClickOutside); // Remove the listener to dela with secondary inputs
+    document.removeEventListener('mousedown', handleClickOutside); // Remove the listener to dela with secondary inputs
 
     setTimeout(() => {
-        document.addEventListener('click', handleClickOutside);
+        document.addEventListener('mousedown', handleClickOutside);
     }, 0);
 }
 
@@ -318,10 +338,15 @@ async function updateProduct(productId: number) {
     if (isSaving) return;
     isSaving = true;
 
-    document.removeEventListener('click', handleClickOutside);
+    document.removeEventListener('mousedown', handleClickOutside);
 
     const product = products.value.find(p => p.id === productId);
     if (product) {
+        if ((editingField.value === "quantity" || editingField.value === "cost") && Number(newProductValue.value) < 0) {
+            isSaving = false;
+            return;
+        }
+
         // Create a plain object with only serializable properties
         const updatedProduct: Product = {
             id: product.id,
@@ -349,10 +374,14 @@ function handleClickOutside(event: MouseEvent) {
     const inputElement = document.querySelector('.edit-input');
 
     if (inputElement && !inputElement.contains(event.target as Node)) {
-        if (editingProductId.value !== null) {
+        if (editingProductId.value !== null && newProductValue.value) {
             updateProduct(editingProductId.value);
+        } else {
+            loadProducts(true);
+            editingProductId.value = null;
+            editingField.value = null;
         }
-        document.removeEventListener('click', handleClickOutside);
+        document.removeEventListener('mousedown', handleClickOutside);
     }
 }
 
@@ -383,163 +412,264 @@ function formatDate(dateString: string): string {
     return `${day}/${month}/${year}`;
 }
 
+function preventNegative(event: Event) {
+    const input = event.target as HTMLInputElement;
+    let value = input.value;
+
+    // Remove all non-digit and non-decimal point characters
+    value = value.replace(/[^0-9.]/g, '');
+
+    // Prevent multiple decimal points
+    const parts = value.split('.');
+    if (parts.length > 2) {
+        value = parts[0] + '.' + parts.slice(1).join('');
+    }
+
+    // Remove leading zeros (unless it's "0" or "0.xxx")
+    value = value.replace(/^0+(\d)/, '$1');
+
+    // Prevent negative values (shouldn't be possible, but just in case)
+    if (value && Number(value) < 0) {
+        value = '0';
+    }
+
+    // If empty, set to '0'
+    if (value === '' || isNaN(Number(value))) {
+        value = '0';
+    }
+
+    input.value = value;
+    newProductValue.value = value;
+}
+
+function preventInvalidKey(event: KeyboardEvent) {
+    // Allow: Backspace, Tab, Arrow keys, Delete, Home, End, etc.
+    const allowedKeys = [
+        "Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", "Home", "End"
+    ];
+    // Allow: period (for decimals), but only if not already present
+    if (
+        allowedKeys.includes(event.key) ||
+        (event.key === "." && !(event.target as HTMLInputElement).value.includes("."))
+    ) {
+        return;
+    }
+    // Block: e, E, +, -, and anything that's not a digit
+    if (
+        event.key === "e" ||
+        event.key === "E" ||
+        event.key === "+" ||
+        event.key === "-" ||
+        !/^\d$/.test(event.key)
+    ) {
+        event.preventDefault();
+    }
+}
+
+function exportPDF() {
+    if (!pdfContent.value) return;
+
+    const currentDate = document.getElementById("current-date");
+
+    // Add the class for PDF export
+    document.body.classList.add('pdf-export');
+    if (currentDate) currentDate.innerText = (new Date()).toISOString().slice(0, 10);
+
+    html2pdf()
+        .set({
+            margin: 0.3,
+            filename: 'Productos.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'in', format: [11, 8.5], orientation: 'landscape' }
+        })
+        .from(pdfContent.value)
+        .save()
+        .then(() => {
+            // Remove the class after the export is done
+            document.body.classList.remove('pdf-export');
+            if (currentDate) currentDate.innerHTML = "";
+        });
+}
+
 onMounted(() => {
     loadProducts();
 });
 
 onBeforeUnmount(() => {
-    document.removeEventListener('click', handleClickOutside);
+    document.removeEventListener('mousedown', handleClickOutside);
 });
 </script>
 
 <template>
-    <div>
+    <div id="list-view-container">
         <div id="upper-bar">
             <DollarValue />
-            <button id="option-modal-btn" class="btn" @click="openMenu()">
+            <button id="option-modal-btn" class="btn" @click.prevent="openMenu()">
                 <Grip id="grip-icon" />
             </button>
             <div v-if="isMenuOpen" class="modal-overlay">
-                <OptionsMenu @close="closeMenu" />
+                <OptionsMenu @close="closeMenu" @export-pdf="exportPDF" />
             </div>
         </div>
-        <h1>Inventario</h1>
-        <div id="functions-container">
-            <div id="search-bar-container">
-                <SearchBar id="search-bar" @search="search" @openSearchModal='openSearchModal'
-                    :isAdvancedSearching="isAdvancedSearching" />
+        <div id="product-list-container">
+            <h1>Inventario</h1>
+            <div id="functions-container">
+                <div id="search-bar-container">
+                    <SearchBar id="search-bar" @search="search" @openSearchModal='openSearchModal'
+                        :isAdvancedSearching="isAdvancedSearching" />
+                </div>
+                <div v-if="isSearchModalOpen" class="modal-overlay">
+                    <AdvancedSearchModal @close="closeSearchModal" @advancedSearch="advancedSearch" />
+                </div>
+                <button @click="openAddProductModal" id="open-modal-btn" class="btn btn-success">Añadir
+                    producto</button>
+                <div v-if="isAddProductModalOpen" class="modal-overlay">
+                    <AddProductModal @close="closeAddProductModal" @add-product="addProduct" />
+                </div>
+                <div id="filter-button-container">
+                    <button id="two-weeks-btn" class="btn filter-btn" @click="filterProductsByExpiry('two-weeks')">
+                        <TriangleAlert />
+                    </button>
+                    <button id="one-week-btn" class="btn filter-btn" @click="filterProductsByExpiry('one-week')">
+                        <TriangleAlert />
+                    </button>
+                    <button id="expired-btn" class="btn filter-btn" @click="filterProductsByExpiry('expired')">
+                        <Ban />
+                    </button>
+                </div>
             </div>
-            <div v-if="isSearchModalOpen" class="modal-overlay">
-                <AdvancedSearchModal @close="closeSearchModal" @advancedSearch="advancedSearch" />
+            <div id="product-table-container" ref="pdfContent">
+                <h4 id="current-date"></h4>
+                <div id="table-container">
+                    <table class="product-table">
+                        <thead>
+                            <tr>
+                                <th id="name-header" @click="sortProducts('name')">
+                                    Nombre
+                                    <ArrowDownAZ class="float-right"
+                                        v-if="sortSetting === 1 && sortingType === 'name'" />
+                                    <ArrowUpZA class="float-right" v-if="sortSetting === 2 && sortingType === 'name'" />
+                                </th>
+                                <th id="quantity-header" @click="sortProducts('quantity')">
+                                    Cantidad
+                                    <ArrowDown01 class="float-right"
+                                        v-if="sortSetting === 1 && sortingType === 'quantity'" />
+                                    <ArrowUp10 class="float-right"
+                                        v-if="sortSetting === 2 && sortingType === 'quantity'" />
+                                </th>
+                                <th id="purchase-date-header" @click="sortProducts('purchaseDate')">
+                                    Fecha de compra
+                                    <CalendarArrowDown class="float-right"
+                                        v-if="sortSetting === 1 && sortingType === 'purchaseDate'" />
+                                    <CalendarArrowUp class="float-right"
+                                        v-if="sortSetting === 2 && sortingType === 'purchaseDate'" />
+                                </th>
+                                <th id="expiry-date-header" @click="sortProducts('expiryDate')">
+                                    Fecha de vencimiento
+                                    <CalendarArrowDown class="float-right"
+                                        v-if="sortSetting === 1 && sortingType === 'expiryDate'" />
+                                    <CalendarArrowUp class="float-right"
+                                        v-if="sortSetting === 2 && sortingType === 'expiryDate'" />
+                                </th>
+                                <th id="cost-header" @click="sortProducts('cost')">
+                                    Costo
+                                    <ArrowDown01 class="float-right"
+                                        v-if="sortSetting === 1 && sortingType === 'cost'" />
+                                    <ArrowUp10 class="float-right" v-if="sortSetting === 2 && sortingType === 'cost'" />
+                                </th>
+                                <th id="actions-header">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody v-if="products.length">
+                            <tr v-for="(product, index) in products" :key="index" :class="{
+                                'close-to-expiry-red': closeToExpiry(product.expiryDate.toString()) === 'red',
+                                'close-to-expiry-yellow': closeToExpiry(product.expiryDate.toString()) === 'yellow',
+                                'expired-product': closeToExpiry(product.expiryDate.toString()) === 'expired'
+                            }">
+
+                                <td class="product-name">
+                                    <span v-if="closeToExpiry(product.expiryDate.toString()) === 'red'"
+                                        class="expired-icon">⚠️
+                                    </span>
+                                    <span v-if="closeToExpiry(product.expiryDate.toString()) === 'expired'"
+                                        class="expired-icon">🚫 </span>
+                                    <span v-if="editingProductId !== product.id || editingField !== 'name'"
+                                        @click="editField(product.id, product.name, 'name')"
+                                        :class="{ 'strikethrough': closeToExpiry(product.expiryDate.toString()) === 'expired' }">{{
+                                            product.name }}</span>
+                                    <input v-else-if="editingField == 'name'" type="text" minlength="0"
+                                        class="edit-input edit-input-primary" v-model="newProductValue"
+                                        @keyup.enter="updateProduct(product.id)" />
+                                    <!-- This originally had a @blur but that caused issues with the keyup, so it was replaced with an eventHandler-->
+
+                                    <span v-if="editingProductId !== product.id || editingField !== 'description'"
+                                        class="product-description"
+                                        @click="editField(product.id, product.description, 'description')"> ({{
+                                            product.description }})</span>
+                                    <input v-else-if="editingField == 'description'" type="text" minlength="0"
+                                        class="edit-input edit-input-secondary" v-model="newProductValue"
+                                        @keyup.enter="updateProduct(product.id)" />
+                                </td>
+
+                                <td class="product-quantity">
+                                    <span v-if="editingProductId !== product.id || editingField !== 'quantity'"
+                                        @click="editField(product.id, String(product.quantity), 'quantity')">{{
+                                            product.quantity
+                                        }}</span>
+                                    <input v-else-if="editingField == 'quantity'" type="number" min="0"
+                                        class="edit-input edit-input-primary edit-input-quantity"
+                                        v-model="newProductValue" @keyup.enter="updateProduct(product.id)"
+                                        @input="preventNegative" @keydown="preventInvalidKey" />
+                                </td>
+
+                                <td class="product-purchase-date product-date-cell">
+                                    <span v-if="editingProductId !== product.id || editingField !== 'purchaseDate'"
+                                        @click="editField(product.id, product.purchaseDate, 'purchaseDate')">{{
+                                            formatDate(product.purchaseDate) }}</span>
+                                    <input v-else-if="editingField == 'purchaseDate'" type="date"
+                                        class="edit-input edit-input-primary edit-input-date" v-model="newProductValue"
+                                        @keyup.enter="updateProduct(product.id)" />
+                                </td>
+
+                                <td class="product-expiry-date product-date-cell">
+                                    <span v-if="editingProductId !== product.id || editingField !== 'expiryDate'"
+                                        @click="editField(product.id, product.expiryDate, 'expiryDate')">
+                                        {{
+                                            product.expiryDate === 'No expira' ? 'No expira' :
+                                                formatDate(product.expiryDate)
+                                        }}</span>
+                                    <input v-else-if="editingField == 'expiryDate'" type="date"
+                                        class="edit-input edit-input-primary edit-input-date" v-model="newProductValue"
+                                        @keyup.enter="updateProduct(product.id)" />
+                                </td>
+
+                                <td class="product-cost">
+                                    $<span v-if="editingProductId !== product.id || editingField !== 'cost'"
+                                        @click="editField(product.id, String(product.cost), 'cost')">{{ product.cost
+                                        }}</span>
+                                    <input v-else-if="editingField == 'cost'" type="number" min="0"
+                                        class="edit-input edit-input-primary edit-input-cost" v-model="newProductValue"
+                                        @keyup.enter="updateProduct(product.id)" @input="preventNegative"
+                                        @keydown="preventInvalidKey" />
+                                    <span class="product-unit-cost"> (${{ product.cost / product.quantity }} c/u)</span>
+                                </td>
+
+                                <td class="actions">
+                                    <button class="btn btn-danger delete-btn"
+                                        @click="showDeleteConfirmation(product.id)">
+                                        <LucideTrash2 class="small" />
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <button @click="openAddProductModal" id="open-modal-btn" class="btn btn-success">Añadir producto</button>
-            <div v-if="isAddProductModalOpen" class="modal-overlay">
-                <AddProductModal @close="closeAddProductModal" @add-product="addProduct" />
-            </div>
-            <div id="filter-button-container">
-                <button id="two-weeks-btn" class="btn filter-btn" @click="filterProductsByExpiry('two-weeks')">
-                    <TriangleAlert />
-                </button>
-                <button id="one-week-btn" class="btn filter-btn" @click="filterProductsByExpiry('one-week')">
-                    <TriangleAlert />
-                </button>
-                <button id="expired-btn" class="btn filter-btn" @click="filterProductsByExpiry('expired')">
-                    <Ban />
-                </button>
-            </div>
+            <ConfirmationDialog class="modal-ov" v-if="isConfirmDialogVisible"
+                :message="'¿Estás seguro que querés eliminar este producto?'" :isVisible="isConfirmDialogVisible"
+                @confirm="confirmDelete" @cancel="cancelDelete" />
         </div>
-        <div id="product-table-container">
-            <table class="product-table">
-                <thead>
-                    <tr>
-                        <th @click="sortProducts('name')">
-                            Nombre
-                            <ArrowDownAZ class="float-right" v-if="sortSetting === 1 && sortingType === 'name'" />
-                            <ArrowUpZA class="float-right" v-if="sortSetting === 2 && sortingType === 'name'" />
-                        </th>
-                        <th @click="sortProducts('quantity')">
-                            Cantidad
-                            <ArrowDown01 class="float-right" v-if="sortSetting === 1 && sortingType === 'quantity'" />
-                            <ArrowUp10 class="float-right" v-if="sortSetting === 2 && sortingType === 'quantity'" />
-                        </th>
-                        <th @click="sortProducts('purchaseDate')">
-                            Fecha de compra
-                            <CalendarArrowDown class="float-right"
-                                v-if="sortSetting === 1 && sortingType === 'purchaseDate'" />
-                            <CalendarArrowUp class="float-right"
-                                v-if="sortSetting === 2 && sortingType === 'purchaseDate'" />
-                        </th>
-                        <th @click="sortProducts('expiryDate')">
-                            Fecha de vencimiento
-                            <CalendarArrowDown class="float-right"
-                                v-if="sortSetting === 1 && sortingType === 'expiryDate'" />
-                            <CalendarArrowUp class="float-right"
-                                v-if="sortSetting === 2 && sortingType === 'expiryDate'" />
-                        </th>
-                        <th @click="sortProducts('cost')">
-                            Costo
-                            <ArrowDown01 class="float-right" v-if="sortSetting === 1 && sortingType === 'cost'" />
-                            <ArrowUp10 class="float-right" v-if="sortSetting === 2 && sortingType === 'cost'" />
-                        </th>
-                        <th id="actions-header">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody v-if="products.length">
-                    <tr v-for="(product, index) in products" :key="index" :class="{
-                        'close-to-expiry-red': closeToExpiry(product.expiryDate.toString()) === 'red',
-                        'close-to-expiry-yellow': closeToExpiry(product.expiryDate.toString()) === 'yellow',
-                        'expired-product': closeToExpiry(product.expiryDate.toString()) === 'expired'
-                    }">
-
-                        <td class="product-name">
-                            <span v-if="closeToExpiry(product.expiryDate.toString()) === 'red'" class="expired-icon">⚠️
-                            </span>
-                            <span v-if="closeToExpiry(product.expiryDate.toString()) === 'expired'"
-                                class="expired-icon">🚫 </span>
-                            <span v-if="editingProductId !== product.id || editingField !== 'name'"
-                                @click="editField(product.id, product.name, 'name')"
-                                :class="{ 'strikethrough': closeToExpiry(product.expiryDate.toString()) === 'expired' }">{{
-                                    product.name }}</span>
-                            <input v-else-if="editingField == 'name'" type="text" class="edit-input edit-input-primary"
-                                v-model="newProductValue" @keyup.enter="updateProduct(product.id)" />
-                            <!-- This originally had a @blur but that caused issues with the keyup, so it was replaced with an eventHandler-->
-
-                            <span v-if="editingProductId !== product.id || editingField !== 'description'"
-                                class="product-description"
-                                @click="editField(product.id, product.description, 'description')"> ({{
-                                    product.description }})</span>
-                            <input v-else-if="editingField == 'description'" type="text"
-                                class="edit-input edit-input-secondary" v-model="newProductValue"
-                                @keyup.enter="updateProduct(product.id)" />
-                        </td>
-
-                        <td class="product-quantity">
-                            <span v-if="editingProductId !== product.id || editingField !== 'quantity'"
-                                @click="editField(product.id, String(product.quantity), 'quantity')">{{ product.quantity
-                                }}</span>
-                            <input v-else-if="editingField == 'quantity'" type="number"
-                                class="edit-input edit-input-primary edit-input-quantity" v-model="newProductValue"
-                                @keyup.enter="updateProduct(product.id)" />
-                        </td>
-
-                        <td class="product-purchase-date product-date-cell">
-                            <span v-if="editingProductId !== product.id || editingField !== 'purchaseDate'"
-                                @click="editField(product.id, product.purchaseDate, 'purchaseDate')">{{
-                                    formatDate(product.purchaseDate) }}</span>
-                            <input v-else-if="editingField == 'purchaseDate'" type="date"
-                                class="edit-input edit-input-primary edit-input-date" v-model="newProductValue"
-                                @keyup.enter="updateProduct(product.id)" />
-                        </td>
-
-                        <td class="product-expiry-date product-date-cell">
-                            <span v-if="editingProductId !== product.id || editingField !== 'expiryDate'"
-                                @click="editField(product.id, product.expiryDate, 'expiryDate')">{{
-                                    formatDate(product.expiryDate) }}</span>
-                            <input v-else-if="editingField == 'expiryDate'" type="date"
-                                class="edit-input edit-input-primary edit-input-date" v-model="newProductValue"
-                                @keyup.enter="updateProduct(product.id)" />
-                        </td>
-
-                        <td class="product-cost">
-                            $<span v-if="editingProductId !== product.id || editingField !== 'cost'"
-                                @click="editField(product.id, String(product.cost), 'cost')">{{ product.cost }}</span>
-                            <input v-else-if="editingField == 'cost'" type="number"
-                                class="edit-input edit-input-primary edit-input-cost" v-model="newProductValue"
-                                @keyup.enter="updateProduct(product.id)" />
-                            <span class="product-unit-cost"> (${{ product.cost / product.quantity }} c/u)</span>
-                        </td>
-
-                        <td class="actions"><button class="btn btn-danger delete-btn"
-                                @click="showDeleteConfirmation(product.id)">
-                                <LucideTrash2 class="small" />
-                            </button></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <ConfirmationDialog class="modal-ov" v-if="isConfirmDialogVisible"
-            :message="'¿Estás seguro que querés eliminar este producto?'" :isVisible="isConfirmDialogVisible"
-            @confirm="confirmDelete" @cancel="cancelDelete" />
     </div>
 </template>
 
@@ -564,6 +694,10 @@ onBeforeUnmount(() => {
     justify-content: space-between;
     align-items: center;
     position: relative;
+}
+
+#product-list-container {
+    margin-top: 20px;
 }
 
 #search-bar-container {
@@ -641,11 +775,41 @@ onBeforeUnmount(() => {
     background-color: #404040;
 }
 
+#current-date {
+    color: #000000;
+}
+
+#table-container {
+    max-height: 78vh;
+    overflow-y: auto;
+    width: 100%;
+}
 
 .product-table {
     width: 100%;
-    margin-top: 20px;
-    border-collapse: collapse;
+}
+
+thead {
+    background-color: #f2f2f2;
+    border: 1px solid #ddd;
+    border-top: none;
+}
+
+.product-table th {
+    position: sticky;
+    top: 0;
+    background-color: #f2f2f2;
+    color: #202020;
+    text-align: center;
+    padding: 8px 7px 8px 7px;
+    font-size: 18px;
+    z-index: 2;
+}
+
+.product-table td {
+    border: 1px solid #ddd;
+    padding: 8px 7px 8px 7px;
+    font-size: 18px;
 }
 
 th {
@@ -687,20 +851,7 @@ th {
 .expired-icon {
     margin-right: 5px;
     color: rgba(255, 0, 0, 0.8);
-    /* Red color for icon */
-}
-
-.product-table th,
-.product-table td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    font-size: 18px;
-}
-
-.product-table th {
-    background-color: #f2f2f2;
-    color: #202020;
-    text-align: center;
+    user-select: none;
 }
 
 .product-description,
@@ -773,5 +924,67 @@ th {
     max-width: 100px;
     padding: 0;
     margin: 0;
+}
+
+.pdf-export .product-name {
+    color: rgb(0, 0, 0) !important;
+    /* Adjust font color for table rows */
+}
+
+.pdf-export .product-description {
+    color: rgb(66, 66, 66) !important;
+}
+
+.pdf-export .product-quantity {
+    color: rgb(0, 0, 0) !important;
+    /* Adjust font color for quantity column */
+}
+
+.pdf-export .product-purchase-date {
+    color: rgb(0, 0, 0) !important;
+    /* Adjust font color for purchase date */
+}
+
+.pdf-export .product-expiry-date {
+    color: rgb(0, 0, 0) !important;
+    /* Adjust font color for expiry date */
+}
+
+.pdf-export .product-cost {
+    color: rgb(0, 0, 0) !important;
+    /* Adjust font color for cost */
+}
+
+.pdf-export .product-unit-cost {
+    color: rgb(66, 66, 66) !important;
+    /* Adjust font color for cost */
+}
+
+/* Exclude delete button from PDF */
+.pdf-export .actions,
+.pdf-export #actions-header {
+    display: none;
+    /* Hide delete button column */
+}
+
+.pdf-export .close-to-expiry-red {
+    background-color: rgb(255, 175, 175);
+    /* Soft pastel red */
+}
+
+.pdf-export .close-to-expiry-yellow {
+    background-color: rgb(235, 240, 180);
+    /* Soft pastel yellow */
+}
+
+.pdf-export .expired-product {
+    background-color: #dddddd;
+    /* Light gray */
+    color: #222;
+    /* Dark gray/black for readability */
+}
+
+.pdf-export #current-date {
+    visibility: visible;
 }
 </style>
