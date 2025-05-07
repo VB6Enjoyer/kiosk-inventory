@@ -23,6 +23,7 @@ import html2pdf from 'html2pdf.js';
 // TODO Optionally, permit normal searching while expiry-filtering, although the logic might be problematic
 // TODO Maybe offer the possibility to choose page size when exporting to PDF
 // TODO Add a currency converter?
+// TODO Add toast notifications for different events and errors
 
 const isAddProductModalOpen = ref<boolean>(false);
 const isSearchModalOpen = ref<boolean>(false);
@@ -347,6 +348,12 @@ async function updateProduct(productId: number) {
             return;
         }
 
+        // Date validation
+        if ((editingField.value === "purchaseDate" || editingField.value === "expiryDate") && !isValidDate(newProductValue.value)) {
+            isSaving = false;
+            return;
+        }
+
         // Create a plain object with only serializable properties
         const updatedProduct: Product = {
             id: product.id,
@@ -410,6 +417,23 @@ function formatDate(dateString: string): string {
     const month = String(date.getUTCMonth() + 1).padStart(2, '0');
     const day = String(date.getUTCDate()).padStart(2, '0');
     return `${day}/${month}/${year}`;
+}
+
+function isValidDate(dateString: string): boolean {
+    // Check for empty or "No expira"
+    if (dateString === "No expira") return true;
+    if (!dateString) return false;
+
+    // Try to parse the date
+    const date = new Date(dateString);
+
+    if (date.getFullYear() < 1900) return false;
+
+    // Check if the date is valid and matches the input (prevents 3/5-digit years)
+    return (
+        !isNaN(date.getTime()) &&
+        /^\d{4}-\d{2}-\d{2}$/.test(dateString)
+    );
 }
 
 function preventNegative(event: Event) {
@@ -986,5 +1010,30 @@ th {
 
 .pdf-export #current-date {
     visibility: visible;
+}
+
+#table-container::-webkit-scrollbar {
+    width: 12px;
+    background: #f2f2f2;
+}
+
+#table-container::-webkit-scrollbar-thumb {
+    background: #bfa000;
+    border-radius: 6px;
+    border: 2px solid #f2f2f2;
+}
+
+#table-container::-webkit-scrollbar-thumb:hover {
+    background: #d4b200;
+}
+
+#table-container::-webkit-scrollbar-track {
+    background: #f2f2f2;
+    border-radius: 6px;
+}
+
+#table-container {
+    scrollbar-width: thin;
+    scrollbar-color: #505050 #242424;
 }
 </style>

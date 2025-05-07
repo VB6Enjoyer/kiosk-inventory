@@ -72,8 +72,29 @@ async function addProduct() {
     closeModal();
 }
 
+function isValidDate(dateValue: string | Date | null, allowEmpty = false): boolean {
+    if ((!dateValue || dateValue === "") && allowEmpty) return true;
+    if (!dateValue || dateValue === "No expira") return allowEmpty;
+    let dateStr = typeof dateValue === "string" ? dateValue : dateValue?.toISOString().slice(0, 10);
+    if (!dateStr) return false;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    return (
+        date.getUTCFullYear() === year &&
+        date.getUTCMonth() + 1 === month &&
+        date.getUTCDate() === day
+    );
+}
+
 const isFormValid = computed(() => {
-    return name.value.trim() !== "" && quantity.value > 0;
+    const nameValid = name.value.trim() !== "";
+    const quantityValid = quantity.value > 0;
+    const purchaseValid = isValidDate(purchaseDate.value, true); // purchase date can be empty
+    const expiryValid = noExpiry.value
+        ? true
+        : isValidDate(expiryDate.value.toString(), false); // must be non-empty and valid if not "No expira"
+    return nameValid && quantityValid && purchaseValid && expiryValid;
 });
 
 function closeModal() {
@@ -92,8 +113,7 @@ function closeModal() {
                             Nombre <span class="required-field">*</span>
                         </label>
                         <input type="text" id="product-name-input" class="text-input form-control"
-                            :class="{ 'input-error': errors.name }" placeholder="Coca-Cola 2L" v-model="name">
-
+                            :class="{ 'input-error': errors.name }" placeholder="Coca-Cola 2L" v-model="name" required>
                         <div class="error-container">
                             <span v-if="errors.name" class="error-message">{{ errors.name }}</span>
                         </div>
@@ -112,7 +132,8 @@ function closeModal() {
                             Unidades <span class="required-field">*</span>
                         </label>
                         <input type="number" id="product-quantity-input" class="text-input form-control"
-                            :class="{ 'input-error': errors.quantity }" placeholder="6" v-model.number="quantity">
+                            :class="{ 'input-error': errors.quantity }" placeholder="6" v-model.number="quantity"
+                            required>
                         <div class="error-container">
                             <span v-if="errors.quantity" class="error-message">{{ errors.quantity }}</span>
                         </div>
@@ -130,9 +151,9 @@ function closeModal() {
 
                     <div class="form-group">
                         <label id="product-expiry-label" for="product-expiry-input" class="text-label">Fecha de
-                            vencimiento</label>
+                            vencimiento <span class="required-field">*</span></label>
                         <input type="date" id="product-expiry-input" class="text-input form-control"
-                            v-model="expiryDate" :disabled="noExpiry">
+                            v-model="expiryDate" :disabled="noExpiry" required>
                         <div class="no-expiry-container">
                             <label id="no-expiry" for="no-expiry-checkbox">
                                 <input type="checkbox" id="no-expiry-checkbox" v-model="noExpiry">
@@ -151,8 +172,8 @@ function closeModal() {
 
                 <button type="button" id="close-button" class="form-button btn btn-danger"
                     @click="closeModal">Cerrar</button>
-                <button type="submit" id="submit-button" class="form-button btn btn-primary" :disabled="!isFormValid"
-                    @click="addProduct">Guardar</button>
+                <button type="submit" id="submit-button" class="form-button btn btn-primary"
+                    :disabled="!isFormValid">Guardar</button>
             </form>
         </div>
     </div>

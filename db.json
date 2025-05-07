@@ -52,7 +52,7 @@
       "quantity": 50,
       "purchaseDate": "Tue Apr 08 2025 23:14:28 GMT-0300 (hora estándar de Argentina)",
       "expiryDate": "2026-02-10",
-      "cost": 1000000
+      "cost": 1000
     },
     {
       "id": 13,
@@ -68,7 +68,7 @@
       "name": "Fantoche",
       "description": "Negro",
       "quantity": 10,
-      "purchaseDate": "Fri Apr 11 2025 00:06:41 GMT-0300 (hora estándar de Argentina)",
+      "purchaseDate": "2025-05-08",
       "expiryDate": "2025-12-28",
       "cost": 4500
     },
@@ -77,7 +77,7 @@
       "name": "Guaymallen",
       "description": "Fruta",
       "quantity": 10,
-      "purchaseDate": "2025-02-05",
+      "purchaseDate": "2025-02-04",
       "expiryDate": "2025-10-09",
       "cost": 5000
     },
@@ -86,8 +86,8 @@
       "name": "Alfajor Rasta",
       "description": "Chocolate",
       "quantity": 10,
-      "purchaseDate": "Sun Apr 13 2025 22:22:21 GMT-0300 (hora estándar de Argentina)",
-      "expiryDate": "Sun Apr 13 2025 22:22:21 GMT-0300 (hora estándar de Argentina)",
+      "purchaseDate": "2025-02-05",
+      "expiryDate": "2025-05-29",
       "cost": 10000
     },
     {
@@ -96,12 +96,12 @@
       "description": "Test 2",
       "quantity": 4,
       "purchaseDate": "Mon May 05 2025 22:21:23 GMT-0300 (hora estándar de Argentina)",
-      "expiryDate": "No expira",
+      "expiryDate": "2024-02-29",
       "cost": 0
     },
     {
       "id": 18,
-      "name": "Test 2",
+      "name": "Test 22",
       "description": "Test Description",
       "quantity": 10,
       "purchaseDate": "2025-05-01",

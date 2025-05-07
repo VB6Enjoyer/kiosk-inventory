@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, defineEmits } from 'vue';
+import { ref, computed, defineEmits, watch } from 'vue';
 import { Clipboard } from 'lucide-vue-next';
 import { AdvancedSearch } from '../interfaces/AdvancedSearch.ts';
 
@@ -16,6 +16,37 @@ const expiryDateMax = ref<Date | string>("");
 const noExpiry = ref<boolean>(false);
 const costMin = ref<number>(0);
 const costMax = ref<number>(0);
+
+const purchaseDateMinError = computed(() =>
+    getDateInputError({
+        value: purchaseDateMin.value,
+        pairValue: purchaseDateMax.value,
+        isMin: true
+    })
+);
+const purchaseDateMaxError = computed(() =>
+    getDateInputError({
+        value: purchaseDateMax.value,
+        pairValue: purchaseDateMin.value,
+        isMin: false
+    })
+);
+const expiryDateMinError = computed(() =>
+    getDateInputError({
+        value: expiryDateMin.value,
+        pairValue: expiryDateMax.value,
+        isMin: true,
+        rangeEnabled: !noExpiry.value
+    })
+);
+const expiryDateMaxError = computed(() =>
+    getDateInputError({
+        value: expiryDateMax.value,
+        pairValue: expiryDateMin.value,
+        isMin: false,
+        rangeEnabled: !noExpiry.value
+    })
+);
 
 const emit = defineEmits(['close', 'advanced-search']);
 
@@ -71,14 +102,79 @@ function copyValue(e: Event, field: string) {
     }
 }
 
-// TODO Implement basic form validation here
+function isValidDate(dateString: string): boolean {
+    if (!dateString) return true; // Allow empty (optional)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return false;
+    const [year, month, day] = dateString.split('-').map(Number);
+    // Use Date.UTC to avoid timezone issues
+    const date = new Date(Date.UTC(year, month - 1, day));
+    return (
+        date.getUTCFullYear() === year &&
+        date.getUTCMonth() + 1 === month &&
+        date.getUTCDate() === day
+    );
+}
+
+function isValidDateRange(min: string, max: string): boolean {
+    // Both empty is valid (no filter)
+    if (!min && !max) return true;
+    // If only one is filled, invalid
+    if (!min || !max) return false;
+    // Both must be valid dates
+    if (!isValidDate(min) || !isValidDate(max)) return false;
+    // Max must be >= min
+    return new Date(max) >= new Date(min);
+}
+
+function getDateInputError({
+    value,
+    pairValue,
+    isMin,
+    rangeEnabled = true
+}: {
+    value: string | Date,
+    pairValue: string | Date,
+    isMin: boolean,
+    rangeEnabled?: boolean
+}) {
+    if (!rangeEnabled) return false;
+    const v = value as string;
+    const p = pairValue as string;
+    // If this field is empty and the pair is filled, error
+    if (!v && p) return true;
+    // If this field is filled and invalid, error
+    if (v && !isValidDate(v)) return true;
+    // If both are filled and valid, and the range is invalid, error for both
+    if (v && p && isValidDate(v) && isValidDate(p)) {
+        if (isMin) return new Date(p) < new Date(v);
+        else return new Date(value as string) < new Date(pairValue as string);
+    }
+    return false;
+}
+
 const isFormValid = computed(() => {
-    return true;
+    // Purchase date range
+    const purchaseDatesValid = isValidDateRange(
+        purchaseDateMin.value as string,
+        purchaseDateMax.value as string
+    );
+
+    // Expiry date range (only if noExpiry is false)
+    const expiryDatesValid = noExpiry.value
+        ? true
+        : isValidDateRange(
+            expiryDateMin.value as string,
+            expiryDateMax.value as string
+        );
+
+    // Add other field validations as needed
+    return purchaseDatesValid && expiryDatesValid;
 });
 
 function closeModal() {
     emit('close');
 }
+
 </script>
 
 <template>
@@ -139,10 +235,12 @@ function closeModal() {
                             class="text-label">Fecha de compra</label>
                         <div class="range-group">
                             <input type="date" id="product-purchase-min-input"
-                                class="text-input form-control small-input" v-model="purchaseDateMin">
-                            <span class="separation-letter">a</span>
+                                class="text-input form-control small-input" v-model="purchaseDateMin"
+                                :class="{ 'input-error': purchaseDateMinError }">
+                            <span class=" separation-letter">a</span>
                             <input type="date" id="product-purchase-max-input"
-                                class="text-input form-control small-input" v-model="purchaseDateMax">
+                                class="text-input form-control small-input" v-model="purchaseDateMax"
+                                :class="{ 'input-error': purchaseDateMaxError }">
                             <button class="btn copy-btn" @click="copyValue($event, 'purchaseDate')">
                                 <Clipboard />
                             </button>
@@ -154,10 +252,12 @@ function closeModal() {
                             class="text-label">Fecha de vencimiento</label>
                         <div class="range-group">
                             <input type="date" id="product-expiry-min-input" class="text-input form-control small-input"
-                                v-model="expiryDateMin" :disabled="noExpiry">
+                                v-model="expiryDateMin" :disabled="noExpiry"
+                                :class="{ 'input-error': expiryDateMinError }">
                             <span class="separation-letter">a</span>
                             <input type="date" id="product-expiry-max-input" class="text-input form-control small-input"
-                                v-model="expiryDateMax" :disabled="noExpiry">
+                                v-model="expiryDateMax" :disabled="noExpiry"
+                                :class="{ 'input-error': expiryDateMaxError }">
                             <button class="btn copy-btn" @click="copyValue($event, 'expiryDate')" :disabled="noExpiry">
                                 <Clipboard />
                             </button>
@@ -187,8 +287,8 @@ function closeModal() {
 
                 <button type="button" id="close-button" class="form-button btn btn-danger"
                     @click="closeModal">Cerrar</button>
-                <button type="submit" id="submit-button" class="form-button btn btn-primary" :disabled="!isFormValid"
-                    @click="advancedSearch">Buscar</button>
+                <button type="submit" id="submit-button" class="form-button btn btn-primary"
+                    :disabled="!isFormValid">Buscar</button>
             </form>
         </div>
     </div>
@@ -361,5 +461,10 @@ function closeModal() {
     padding: 0;
     margin-top: 2px;
     white-space: nowrap;
+}
+
+.input-error {
+    border: 2px solid #ff5252 !important;
+    box-shadow: 0 0 4px #ff5252;
 }
 </style>
