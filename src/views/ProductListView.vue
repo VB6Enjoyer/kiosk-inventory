@@ -16,7 +16,7 @@ import html2pdf from 'html2pdf.js';
 
 // * All //@ts-ignore are to prevent a pesky error which ignores that "window" refers to the Electron window
 
-// TODO Implement form control for editing inputs
+// TODO CHECK! Implement form control for editing inputs
 // TODO For date fields, assign existing values when editing | ACTUALLY this works as long as the dates are properly formatted in the database
 // TODO Do extensive testing and write down any bugs to fix
 // TODO Add toolboxes for guidance
