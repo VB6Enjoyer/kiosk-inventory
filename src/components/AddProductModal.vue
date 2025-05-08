@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, reactive, defineEmits, watch } from 'vue';
+import { ref, computed, reactive, defineEmits, watch, Ref } from 'vue';
 import type { Product } from "../interfaces/Product.ts"
 
 const name = ref<string>("");
@@ -100,20 +100,86 @@ const isFormValid = computed(() => {
 function closeModal() {
     emit('close');
 }
+
+function preventNegative(event: Event, targetRef: Ref<number>) {
+    const input = event.target as HTMLInputElement;
+    let value = input.value;
+
+    // Remove all non-digit and non-decimal point characters
+    value = value.replace(/[^0-9.]/g, '');
+
+    // Prevent multiple decimal points
+    const parts = value.split('.');
+    if (parts.length > 2) {
+        value = parts[0] + '.' + parts.slice(1).join('');
+    }
+
+    // Remove leading zeros (unless it's "0" or "0.xxx")
+    value = value.replace(/^0+(\d)/, '$1');
+
+    // Prevent negative values (shouldn't be possible, but just in case)
+    if (value && Number(value) < 0) {
+        value = '0';
+    }
+
+    // If empty, set to '0'
+    if (value === '' || isNaN(Number(value))) {
+        value = '0';
+    }
+
+    input.value = value;
+    targetRef.value = Number(value);
+}
+
+function preventInvalidKey(event: KeyboardEvent) {
+    // Allow: Backspace, Tab, Arrow keys, Delete, Home, End, etc.
+    const allowedKeys = [
+        "Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", "Home", "End"
+    ];
+    // Allow: period (for decimals), but only if not already present
+    if (
+        allowedKeys.includes(event.key) ||
+        (event.key === "." && !(event.target as HTMLInputElement).value.includes("."))
+    ) {
+        return;
+    }
+    // Block: e, E, +, -, and anything that's not a digit
+    if (
+        event.key === "e" ||
+        event.key === "E" ||
+        event.key === "+" ||
+        event.key === "-" ||
+        !/^\d$/.test(event.key)
+    ) {
+        event.preventDefault();
+    }
+}
+
+function onQuantityInput(event: Event) {
+    preventNegative(event, quantity);
+}
+function onCostInput(event: Event) {
+    preventNegative(event, cost);
+}
 </script>
 
 <template>
     <div id="modal-container" class="modal-sm">
         <h2 id="form-header">Añadir producto</h2>
+
         <div id="form-container">
             <form id="product-form" @submit.prevent="addProduct">
                 <div class="row">
                     <div class="form-group">
                         <label id="product-name-label" for="product-name-input" class="text-label">
-                            Nombre <span class="required-field">*</span>
+                            Nombre
+                            <span class="required-field" title="Requerido">*</span>
                         </label>
+
                         <input type="text" id="product-name-input" class="text-input form-control"
-                            :class="{ 'input-error': errors.name }" placeholder="Coca-Cola 2L" v-model="name" required>
+                            title="Nombre del producto" :class="{ 'input-error': errors.name }"
+                            placeholder="Coca-Cola 2L" v-model="name" required>
+
                         <div class="error-container">
                             <span v-if="errors.name" class="error-message">{{ errors.name }}</span>
                         </div>
@@ -122,8 +188,10 @@ function closeModal() {
                     <div class="form-group">
                         <label id="product-description-label" for="product-description-input"
                             class="text-label">Descripción</label>
+
                         <input type="text" id="product-description-input" class="text-input form-control"
-                            placeholder="Botella de vidrio" v-model="description">
+                            title="Descripción del producto" placeholder="Botella de vidrio" v-model="description">
+
                         <div class="error-container"></div>
                     </div>
 
@@ -132,8 +200,8 @@ function closeModal() {
                             Unidades <span class="required-field">*</span>
                         </label>
                         <input type="number" id="product-quantity-input" class="text-input form-control"
-                            :class="{ 'input-error': errors.quantity }" placeholder="6" v-model.number="quantity"
-                            required>
+                            :class="{ 'input-error': errors.quantity }" placeholder="6" min="0"
+                            v-model.number="quantity" @input="onQuantityInput" @keydown="preventInvalidKey" required>
                         <div class="error-container">
                             <span v-if="errors.quantity" class="error-message">{{ errors.quantity }}</span>
                         </div>
@@ -165,7 +233,7 @@ function closeModal() {
                     <div class="form-group">
                         <label id="product-cost-label" for="product-cost-input" class="text-label">Costo</label>
                         <input type="number" id="product-cost-input" class="text-input form-control" placeholder="1500"
-                            v-model.number="cost">
+                            min="0" v-model.number="cost" @input="onCostInput" @keydown="preventInvalidKey">
                         <div class="error-container"></div>
                     </div>
                 </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, defineEmits, watch } from 'vue';
+import { ref, computed, defineEmits, Ref } from 'vue';
 import { Clipboard } from 'lucide-vue-next';
 import { AdvancedSearch } from '../interfaces/AdvancedSearch.ts';
 
@@ -16,6 +16,8 @@ const expiryDateMax = ref<Date | string>("");
 const noExpiry = ref<boolean>(false);
 const costMin = ref<number>(0);
 const costMax = ref<number>(0);
+
+const numRefMap = { quantityMin, quantityMax, costMin, costMax };
 
 const purchaseDateMinError = computed(() =>
     getDateInputError({
@@ -175,6 +177,63 @@ function closeModal() {
     emit('close');
 }
 
+function preventNegative(event: Event, targetRef: Ref<number>) {
+    const input = event.target as HTMLInputElement;
+    let value = input.value;
+
+    // Remove all non-digit and non-decimal point characters
+    value = value.replace(/[^0-9.]/g, '');
+
+    // Prevent multiple decimal points
+    const parts = value.split('.');
+    if (parts.length > 2) {
+        value = parts[0] + '.' + parts.slice(1).join('');
+    }
+
+    // Remove leading zeros (unless it's "0" or "0.xxx")
+    value = value.replace(/^0+(\d)/, '$1');
+
+    // Prevent negative values (shouldn't be possible, but just in case)
+    if (value && Number(value) < 0) {
+        value = '0';
+    }
+
+    // If empty, set to '0'
+    if (value === '' || isNaN(Number(value))) {
+        value = '0';
+    }
+
+    input.value = value;
+    targetRef.value = Number(value);
+}
+
+function preventInvalidKey(event: KeyboardEvent) {
+    // Allow: Backspace, Tab, Arrow keys, Delete, Home, End, etc.
+    const allowedKeys = [
+        "Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", "Home", "End"
+    ];
+    // Allow: period (for decimals), but only if not already present
+    if (
+        allowedKeys.includes(event.key) ||
+        (event.key === "." && !(event.target as HTMLInputElement).value.includes("."))
+    ) {
+        return;
+    }
+    // Block: e, E, +, -, and anything that's not a digit
+    if (
+        event.key === "e" ||
+        event.key === "E" ||
+        event.key === "+" ||
+        event.key === "-" ||
+        !/^\d$/.test(event.key)
+    ) {
+        event.preventDefault();
+    }
+}
+
+function onNumInput(event: Event, field: string) {
+    preventNegative(event, numRefMap[field]);
+}
 </script>
 
 <template>
@@ -216,12 +275,14 @@ function closeModal() {
                             class="text-label">Unidades</label>
                         <div class="range-group">
                             <input type="number" id="product-quantity-min-input"
-                                class="text-input form-control small-input" placeholder="2"
-                                v-model.number="quantityMin">
+                                class="text-input form-control small-input" placeholder="2" min="0"
+                                v-model.number="quantityMin" @input="event => onNumInput(event, 'quantityMin')"
+                                @keydown="preventInvalidKey">
                             <span class="hyphen">-</span>
                             <input type="number" id="product-quantity-max-input"
-                                class="text-input form-control small-input" placeholder="15"
-                                v-model.number="quantityMax">
+                                class="text-input form-control small-input" placeholder="15" min="0"
+                                v-model.number="quantityMax" @input="event => onNumInput(event, 'quantityMax')"
+                                @keydown="preventInvalidKey">
                             <button class="btn copy-btn" @click="copyValue($event, 'quantity')">
                                 <Clipboard />
                             </button>
@@ -274,10 +335,12 @@ function closeModal() {
                         <label id="product-cost-label" for="product-cost-input" class="text-label">Costo</label>
                         <div class="range-group range-group-number">
                             <input type="number" id="product-cost-min-input" class="text-input form-control small-input"
-                                placeholder="700" v-model.number="costMin">
+                                placeholder="700" min="0" v-model.number="costMin"
+                                @input="event => onNumInput(event, 'costMin')" @keydown="preventInvalidKey">
                             <span class="hyphen">-</span>
                             <input type="number" id="product-cost-max-input" class="text-input form-control small-input"
-                                placeholder="1800" v-model.number="costMax">
+                                placeholder="1800" min="0" v-model.number="costMax"
+                                @input="event => onNumInput(event, 'costMax')" @keydown="preventInvalidKey">
                             <button class="btn copy-btn" @click="copyValue($event, 'cost')">
                                 <Clipboard />
                             </button>

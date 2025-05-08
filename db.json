@@ -148,10 +148,10 @@
       "id": 23,
       "name": "test 5",
       "description": "",
-      "quantity": 3,
+      "quantity": 4,
       "purchaseDate": "Mon May 05 2025 23:09:02 GMT-0300 (hora estándar de Argentina)",
       "expiryDate": "No expira",
-      "cost": 0
+      "cost": 4
     },
     {
       "id": 24,

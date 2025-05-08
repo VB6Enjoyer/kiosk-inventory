@@ -14,10 +14,7 @@ import OptionsMenu from '../components/OptionsMenu.vue';
 import DollarValue from "../components/DollarValue.vue"
 import html2pdf from 'html2pdf.js';
 
-// * All //@ts-ignore are to prevent a pesky error which ignores that "window" refers to the Electron window
-
-// TODO CHECK! Implement form control for editing inputs
-// TODO For date fields, assign existing values when editing | ACTUALLY this works as long as the dates are properly formatted in the database
+// All //@ts-ignore are to prevent a pesky error which ignores that "window" refers to the Electron window
 // TODO Do extensive testing and write down any bugs to fix
 // TODO Add toolboxes for guidance
 // TODO Optionally, permit normal searching while expiry-filtering, although the logic might be problematic
