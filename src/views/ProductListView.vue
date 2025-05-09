@@ -13,14 +13,14 @@ import { AdvancedSearch } from '../interfaces/AdvancedSearch.ts';
 import OptionsMenu from '../components/OptionsMenu.vue';
 import DollarValue from "../components/DollarValue.vue"
 import html2pdf from 'html2pdf.js';
+import { useToast } from 'vue-toastification';
 
 // All //@ts-ignore are to prevent a pesky error which ignores that "window" refers to the Electron window
 // TODO Do extensive testing and write down any bugs to fix
-// TODO Add toolboxes for guidance
 // TODO Optionally, permit normal searching while expiry-filtering, although the logic might be problematic
 // TODO Maybe offer the possibility to choose page size when exporting to PDF
 // TODO Add a currency converter?
-// TODO Add toast notifications for different events and errors
+// TODO Allow hiding the exchange values
 
 const isAddProductModalOpen = ref<boolean>(false);
 const isSearchModalOpen = ref<boolean>(false);
@@ -43,6 +43,8 @@ let isAdvancedSearching: boolean = false;
 let filterSetting: number = 0; // 0 = no, 1 = two weeks to expiry, 2 = one week to expiry, 3 = expired
 let isFiltering: boolean = false;
 let sortSetting = 0; // 0 = default (sort by ID), 1 = A-Z/0-9, 2 = Z-A/9-0
+
+const toast = useToast();
 
 const sortFunctions = {
     id: (a: Product, b: Product) => a.id - b.id,
@@ -167,8 +169,17 @@ function advancedSearch(search: AdvancedSearch) {
 
     products.value = [...filteredProducts];
     searchedProducts.value = [...products.value]
+
     sortProducts(sortingType.value || "", true);
-    isAdvancedSearching = true;
+    if (products.value.length == productsBackup.value.length) {
+        isAdvancedSearching = false
+    } else {
+        isAdvancedSearching = true;
+        searchedProducts.value.length > 0
+            ? toast(`Se encontraron ${searchedProducts.value.length} resultados.`)
+            : toast.error("No se encontraron resultados.")
+    }
+
     if (filterSetting != 0) {
         if (filterSetting == 1) filterProductsByExpiry("two-weeks");
         if (filterSetting == 2) filterProductsByExpiry("one-week");
@@ -294,12 +305,19 @@ async function addProduct(product: Product) {
     closeAddProductModal();
     loadProducts(true);
     isAdvancedSearching = false;
+
+    let toastMessage = "Se añadió " + product.name + (product.description ? ` (${product.description})` : "") + " a la base de datos."
+
+    toast.success(toastMessage)
 }
 
 async function deleteProduct(id: number) {
+    const deletedProduct = productsBackup.value.find(product => product.id == id);
     // @ts-ignore
     await window.api.deleteProduct(id);
     isAdvancedSearching = false;
+    let toastMessage = "Se eliminó " + deletedProduct?.name + (deletedProduct?.description ? ` (${deletedProduct?.description})` : "") + " de la base de datos."
+    toast.success(toastMessage);
 }
 
 function showDeleteConfirmation(id: number) {
@@ -488,6 +506,11 @@ function preventInvalidKey(event: KeyboardEvent) {
 }
 
 function exportPDF() {
+    if (productsBackup.value.length == 0) {
+        toast.error("Error a exportar a PDF: La base de datos está vacía");
+        return;
+    }
+
     if (!pdfContent.value) return;
 
     const currentDate = document.getElementById("current-date");
@@ -510,6 +533,7 @@ function exportPDF() {
             // Remove the class after the export is done
             document.body.classList.remove('pdf-export');
             if (currentDate) currentDate.innerHTML = "";
+            toast.success("Se exportó la base de datos a PDF con éxito.");
         });
 }
 

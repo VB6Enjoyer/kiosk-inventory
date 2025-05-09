@@ -21,8 +21,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from) => {
-    console.log(`Navigating from ${from.path} to ${to.path}`);
-    return true;    
+    return true;
 });
 
 export default router;

@@ -1,12 +1,8 @@
 <script lang="ts">
-import ProductListView from './views/ProductListView.vue'
 import { Product } from './interfaces/Product'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap';
-import DollarValue from "./components/DollarValue.vue"
-import OptionsMenu from './components/OptionsMenu.vue';
 import { ref } from 'vue';
-import { Grip } from 'lucide-vue-next';
 
 // TODO Localize fonts so they work offline
 // TODO Implement a calculator?
