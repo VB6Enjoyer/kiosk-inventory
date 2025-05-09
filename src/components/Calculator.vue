@@ -17,20 +17,20 @@ const buttons = [
   { label: '7', value: '7', type: 'number' },
   { label: '8', value: '8', type: 'number' },
   { label: '9', value: '9', type: 'number' },
-  { label: '÷', value: '/', type: 'operator' },
+  { label: '÷', value: '/', type: 'operator', title: 'Dividir' },
   { label: '4', value: '4', type: 'number' },
   { label: '5', value: '5', type: 'number' },
   { label: '6', value: '6', type: 'number' },
-  { label: '×', value: '*', type: 'operator' },
+  { label: '×', value: '*', type: 'operator', title: "Multiplicar" },
   { label: '1', value: '1', type: 'number' },
   { label: '2', value: '2', type: 'number' },
   { label: '3', value: '3', type: 'number' },
-  { label: '-', value: '-', type: 'operator' },
+  { label: '-', value: '-', type: 'operator', title: "Restar" },
   { label: '0', value: '0', type: 'number' },
-  { label: '.', value: '.', type: 'decimal' },
-  { label: '=', value: '=', type: 'equals' },
-  { label: '+', value: '+', type: 'operator' },
-  { label: 'C', value: 'clear', type: 'clear' },
+  { label: '.', value: '.', type: 'decimal', title: "Decimal" },
+  { label: '=', value: '=', type: 'equals', title: "Resultado" },
+  { label: '+', value: '+', type: 'operator', title: "Sumar" },
+  { label: 'C', value: 'clear', type: 'clear', title: "Borrar todo" },
 ];
 
 function handleButton(btn) {
@@ -211,19 +211,22 @@ onUnmounted(() => {
 <template>
   <div class="calculator-container">
     <div id="button-container">
-      <button id="hide-btn" class="btn window-btn" @click="hide">
+      <button id="hide-btn" class="btn window-btn" title="Minimizar" @click="hide">
         <Minus id="hide-icon" class="window-icon" />
       </button>
-      <button id="close-btn" class="btn window-btn" @click="close">
+      <button id="close-btn" class="btn window-btn" title="Cerrar" @click="close">
         <X id="close-icon" class="window-icon" />
       </button>
     </div>
+
     <div class="display-container">
       <span id="current-operation">{{ currentOperation }}</span>
       <input type="text" id="calculator-input" :value="display" disabled>
     </div>
+
     <div class="keypad">
-      <button v-for="btn in buttons" :key="btn.value" @click="handleButton(btn)">{{ btn.label }}</button>
+      <button v-for="btn in buttons" :key="btn.value" :title="btn.title || ''" @click="handleButton(btn)">{{ btn.label
+        }}</button>
     </div>
   </div>
 </template>

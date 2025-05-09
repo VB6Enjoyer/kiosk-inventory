@@ -33,40 +33,49 @@ function exit() {
         <div id="modal-top-section">
             <div class="spacer"></div>
             <h2 id="options-header">Opciones</h2>
-            <button id="close-btn" class="btn" @click.prevent="closeMenu">
+            <button id="close-btn" class="btn" title="Cerrar menú" @click.prevent="closeMenu">
                 <X id="close-icon" />
             </button>
         </div>
+
         <div id="options-menu">
-            <button id="calculator-btn" class="btn option-btn" @click.prevent="openCalculator">
+            <button id="calculator-btn" class="btn option-btn" title="Abrir calculadora"
+                @click.prevent="openCalculator">
                 <Calculator id="calculator-icon" class="icon" />
                 <p class="btn-text">Calculadora</p>
             </button>
-            <button id="excel-btn" class="btn option-btn">
+
+            <button id="excel-btn" class="btn option-btn" title="Exportar a hoja de cálculo de Excel">
                 <FileSpreadsheet id="excel-icon" class="icon" />
                 <p class="btn-text">Exportar a Excel</p>
             </button>
-            <button id="pdf-btn" class="btn option-btn" @click.prevent="exportPDF">
+
+            <button id="pdf-btn" class="btn option-btn" title="Exportar a PDF para imprimir" @click.prevent="exportPDF">
                 <FileText id="pdf-icon" class="icon" />
                 <p class="btn-text">Exportar a PDF</p>
             </button>
-            <button id="import-btn" class="btn option-btn">
+
+            <button id="import-btn" class="btn option-btn" title="Importar hoja de cálculo de Excel">
                 <FileUp id="import-icon" class="icon" />
                 <p class="btn-text">Importar Excel</p>
             </button>
-            <button id="battery-btn" class="btn option-btn">
+
+            <button id="battery-btn" class="btn option-btn" title="Modo de ahorro de batería">
                 <BatteryCharging id="battery-icon" class="icon" />
                 <p class="btn-text">Modo Eco</p>
             </button>
-            <button id="color-mode-btn" class="btn option-btn">
+
+            <button id="color-mode-btn" class="btn option-btn" title="Esquema de colores claros">
                 <Sun id="color-mode-icon" class="icon" />
                 <p class="btn-text">Modo Claro</p>
             </button>
-            <button id="help-btn" class="btn option-btn">
+
+            <button id="help-btn" class="btn option-btn" title="Abrir documento de ayuda">
                 <CircleHelp id="help-icon" class="icon" />
                 <p class="btn-text">Ayuda</p>
             </button>
-            <button id="exit-btn" class="btn option-btn" @click.prevent="exit">
+
+            <button id="exit-btn" class="btn option-btn" title="Cerrar el programa" @click.prevent="exit">
                 <LogOut id="exit-icon" class="icon" />
                 <p class="btn-text">Salir</p>
             </button>

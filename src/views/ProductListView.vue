@@ -526,82 +526,105 @@ onBeforeUnmount(() => {
     <div id="list-view-container">
         <div id="upper-bar">
             <DollarValue />
-            <button id="option-modal-btn" class="btn" @click.prevent="openMenu()">
+
+            <button id="option-modal-btn" class="btn" title="Menú de opciones" @click.prevent="openMenu()">
                 <Grip id="grip-icon" />
             </button>
+
             <div v-if="isMenuOpen" class="modal-overlay">
                 <OptionsMenu @close="closeMenu" @export-pdf="exportPDF" />
             </div>
         </div>
+
         <div id="product-list-container">
             <h1>Inventario</h1>
+
             <div id="functions-container">
                 <div id="search-bar-container">
                     <SearchBar id="search-bar" @search="search" @openSearchModal='openSearchModal'
                         :isAdvancedSearching="isAdvancedSearching" />
                 </div>
+
                 <div v-if="isSearchModalOpen" class="modal-overlay">
                     <AdvancedSearchModal @close="closeSearchModal" @advancedSearch="advancedSearch" />
                 </div>
+
                 <button @click="openAddProductModal" id="open-modal-btn" class="btn btn-success">Añadir
                     producto</button>
+
                 <div v-if="isAddProductModalOpen" class="modal-overlay">
                     <AddProductModal @close="closeAddProductModal" @add-product="addProduct" />
                 </div>
+
                 <div id="filter-button-container">
-                    <button id="two-weeks-btn" class="btn filter-btn" @click="filterProductsByExpiry('two-weeks')">
+                    <button id="two-weeks-btn" class="btn filter-btn" title="Mostrar productos a vencer en 2 semanas"
+                        @click="filterProductsByExpiry('two-weeks')">
                         <TriangleAlert />
                     </button>
-                    <button id="one-week-btn" class="btn filter-btn" @click="filterProductsByExpiry('one-week')">
+
+                    <button id="one-week-btn" class="btn filter-btn" title="Mostrar productos a vencer en una semana"
+                        @click="filterProductsByExpiry('one-week')">
                         <TriangleAlert />
                     </button>
-                    <button id="expired-btn" class="btn filter-btn" @click="filterProductsByExpiry('expired')">
+
+                    <button id="expired-btn" class="btn filter-btn" title="Mostrar productos vencidos"
+                        @click="filterProductsByExpiry('expired')">
                         <Ban />
                     </button>
                 </div>
             </div>
+
             <div id="product-table-container" ref="pdfContent">
-                <h4 id="current-date"></h4>
+                <h4 id="current-date"></h4> <!-- Used for PDF exports, otherwise invisible -->
+
                 <div id="table-container">
                     <table class="product-table">
                         <thead>
                             <tr>
-                                <th id="name-header" @click="sortProducts('name')">
+                                <th id="name-header" title="Ordenar por nombre" @click="sortProducts('name')">
                                     Nombre
                                     <ArrowDownAZ class="float-right"
                                         v-if="sortSetting === 1 && sortingType === 'name'" />
                                     <ArrowUpZA class="float-right" v-if="sortSetting === 2 && sortingType === 'name'" />
                                 </th>
-                                <th id="quantity-header" @click="sortProducts('quantity')">
+
+                                <th id="quantity-header" title="Ordenar por cantidad" @click="sortProducts('quantity')">
                                     Cantidad
                                     <ArrowDown01 class="float-right"
                                         v-if="sortSetting === 1 && sortingType === 'quantity'" />
                                     <ArrowUp10 class="float-right"
                                         v-if="sortSetting === 2 && sortingType === 'quantity'" />
                                 </th>
-                                <th id="purchase-date-header" @click="sortProducts('purchaseDate')">
+
+                                <th id="purchase-date-header" title="Ordenar por fecha de compra"
+                                    @click="sortProducts('purchaseDate')">
                                     Fecha de compra
                                     <CalendarArrowDown class="float-right"
                                         v-if="sortSetting === 1 && sortingType === 'purchaseDate'" />
                                     <CalendarArrowUp class="float-right"
                                         v-if="sortSetting === 2 && sortingType === 'purchaseDate'" />
                                 </th>
-                                <th id="expiry-date-header" @click="sortProducts('expiryDate')">
+
+                                <th id="expiry-date-header" title="Ordenar por fecha de vencimiento"
+                                    @click="sortProducts('expiryDate')">
                                     Fecha de vencimiento
                                     <CalendarArrowDown class="float-right"
                                         v-if="sortSetting === 1 && sortingType === 'expiryDate'" />
                                     <CalendarArrowUp class="float-right"
                                         v-if="sortSetting === 2 && sortingType === 'expiryDate'" />
                                 </th>
-                                <th id="cost-header" @click="sortProducts('cost')">
+
+                                <th id="cost-header" title="Ordenar por costo" @click="sortProducts('cost')">
                                     Costo
                                     <ArrowDown01 class="float-right"
                                         v-if="sortSetting === 1 && sortingType === 'cost'" />
                                     <ArrowUp10 class="float-right" v-if="sortSetting === 2 && sortingType === 'cost'" />
                                 </th>
+
                                 <th id="actions-header">Acciones</th>
                             </tr>
                         </thead>
+
                         <tbody v-if="products.length">
                             <tr v-for="(product, index) in products" :key="index" :class="{
                                 'close-to-expiry-red': closeToExpiry(product.expiryDate.toString()) === 'red',
@@ -611,23 +634,27 @@ onBeforeUnmount(() => {
 
                                 <td class="product-name">
                                     <span v-if="closeToExpiry(product.expiryDate.toString()) === 'red'"
-                                        class="expired-icon">⚠️
-                                    </span>
+                                        class="expired-icon" title="Vence en menos de una semana">⚠️</span>
+
                                     <span v-if="closeToExpiry(product.expiryDate.toString()) === 'expired'"
-                                        class="expired-icon">🚫 </span>
+                                        class="expired-icon" title="Vencido">🚫</span>
+
                                     <span v-if="editingProductId !== product.id || editingField !== 'name'"
                                         @click="editField(product.id, product.name, 'name')"
-                                        :class="{ 'strikethrough': closeToExpiry(product.expiryDate.toString()) === 'expired' }">{{
-                                            product.name }}</span>
+                                        :class="{ 'strikethrough': closeToExpiry(product.expiryDate.toString()) === 'expired' }">
+                                        {{ product.name }}
+                                    </span>
+
                                     <input v-else-if="editingField == 'name'" type="text" minlength="0"
                                         class="edit-input edit-input-primary" v-model="newProductValue"
                                         @keyup.enter="updateProduct(product.id)" />
-                                    <!-- This originally had a @blur but that caused issues with the keyup, so it was replaced with an eventHandler-->
 
                                     <span v-if="editingProductId !== product.id || editingField !== 'description'"
                                         class="product-description"
-                                        @click="editField(product.id, product.description, 'description')"> ({{
-                                            product.description }})</span>
+                                        @click="editField(product.id, product.description, 'description')">
+                                        ({{ product.description }})
+                                    </span>
+
                                     <input v-else-if="editingField == 'description'" type="text" minlength="0"
                                         class="edit-input edit-input-secondary" v-model="newProductValue"
                                         @keyup.enter="updateProduct(product.id)" />
@@ -635,9 +662,10 @@ onBeforeUnmount(() => {
 
                                 <td class="product-quantity">
                                     <span v-if="editingProductId !== product.id || editingField !== 'quantity'"
-                                        @click="editField(product.id, String(product.quantity), 'quantity')">{{
-                                            product.quantity
-                                        }}</span>
+                                        @click="editField(product.id, String(product.quantity), 'quantity')">
+                                        {{ product.quantity }}
+                                    </span>
+
                                     <input v-else-if="editingField == 'quantity'" type="number" min="0"
                                         class="edit-input edit-input-primary edit-input-quantity"
                                         v-model="newProductValue" @keyup.enter="updateProduct(product.id)"
@@ -646,8 +674,10 @@ onBeforeUnmount(() => {
 
                                 <td class="product-purchase-date product-date-cell">
                                     <span v-if="editingProductId !== product.id || editingField !== 'purchaseDate'"
-                                        @click="editField(product.id, product.purchaseDate, 'purchaseDate')">{{
-                                            formatDate(product.purchaseDate) }}</span>
+                                        @click="editField(product.id, product.purchaseDate, 'purchaseDate')">
+                                        {{ formatDate(product.purchaseDate) }}
+                                    </span>
+
                                     <input v-else-if="editingField == 'purchaseDate'" type="date"
                                         class="edit-input edit-input-primary edit-input-date" v-model="newProductValue"
                                         @keyup.enter="updateProduct(product.id)" />
@@ -656,10 +686,12 @@ onBeforeUnmount(() => {
                                 <td class="product-expiry-date product-date-cell">
                                     <span v-if="editingProductId !== product.id || editingField !== 'expiryDate'"
                                         @click="editField(product.id, product.expiryDate, 'expiryDate')">
-                                        {{
-                                            product.expiryDate === 'No expira' ? 'No expira' :
-                                                formatDate(product.expiryDate)
-                                        }}</span>
+                                        {{ product.expiryDate === 'No expira'
+                                            ? 'No expira'
+                                            : formatDate(product.expiryDate)
+                                        }}
+                                    </span>
+
                                     <input v-else-if="editingField == 'expiryDate'" type="date"
                                         class="edit-input edit-input-primary edit-input-date" v-model="newProductValue"
                                         @keyup.enter="updateProduct(product.id)" />
@@ -667,17 +699,20 @@ onBeforeUnmount(() => {
 
                                 <td class="product-cost">
                                     $<span v-if="editingProductId !== product.id || editingField !== 'cost'"
-                                        @click="editField(product.id, String(product.cost), 'cost')">{{ product.cost
-                                        }}</span>
+                                        @click="editField(product.id, String(product.cost), 'cost')">
+                                        {{ product.cost }}
+                                    </span>
+
                                     <input v-else-if="editingField == 'cost'" type="number" min="0"
                                         class="edit-input edit-input-primary edit-input-cost" v-model="newProductValue"
                                         @keyup.enter="updateProduct(product.id)" @input="preventNegative"
                                         @keydown="preventInvalidKey" />
+
                                     <span class="product-unit-cost"> (${{ product.cost / product.quantity }} c/u)</span>
                                 </td>
 
                                 <td class="actions">
-                                    <button class="btn btn-danger delete-btn"
+                                    <button class="btn btn-danger delete-btn" title="Borrar producto"
                                         @click="showDeleteConfirmation(product.id)">
                                         <LucideTrash2 class="small" />
                                     </button>
@@ -687,6 +722,7 @@ onBeforeUnmount(() => {
                     </table>
                 </div>
             </div>
+
             <ConfirmationDialog class="modal-ov" v-if="isConfirmDialogVisible"
                 :message="'¿Estás seguro que querés eliminar este producto?'" :isVisible="isConfirmDialogVisible"
                 @confirm="confirmDelete" @cancel="cancelDelete" />
@@ -804,6 +840,7 @@ onBeforeUnmount(() => {
     max-height: 78vh;
     overflow-y: auto;
     width: 100%;
+    border: 1px ridge #a0a0a0;
 }
 
 .product-table {

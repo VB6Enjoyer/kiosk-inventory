@@ -246,9 +246,9 @@ function onNumInput(event: Event, field: string) {
                         <label id="product-name-label" for="product-name-input" class="text-label">Nombre</label>
                         <div class="input-with-checkbox">
                             <input type="text" id="product-name-input" class="text-input form-control"
-                                placeholder="Coca-Cola 2L" v-model="name">
+                                title="Nombre del producto" placeholder="Coca-Cola 2L" v-model="name">
                             <label id="name-exact-search-label" class="checkbox-label form-checkbox-label"
-                                for="name-exact-search">
+                                for="name-exact-search" title="Filtro para resultados exactos">
                                 <input type="checkbox" id="name-exact-search" class="checkbox" v-model="exactName" />
                                 Exacto
                             </label>
@@ -260,9 +260,9 @@ function onNumInput(event: Event, field: string) {
                             class="text-label">Descripción</label>
                         <div class="input-with-checkbox">
                             <input type="text" id="product-description-input" class="text-input form-control"
-                                placeholder="Botella de vidrio" v-model="description">
+                                title="Descripción del producto" placeholder="Botella de vidrio" v-model="description">
                             <label id="description-exact-search-label" class="checkbox-label form-checkbox-label"
-                                for="description-exact-search">
+                                for="description-exact-search" title="Filtro para resultados exactos">
                                 <input type="checkbox" id="description-exact-search" class="checkbox"
                                     v-model="exactDescription" />
                                 Exacto
@@ -275,15 +275,16 @@ function onNumInput(event: Event, field: string) {
                             class="text-label">Unidades</label>
                         <div class="range-group">
                             <input type="number" id="product-quantity-min-input"
-                                class="text-input form-control small-input" placeholder="2" min="0"
-                                v-model.number="quantityMin" @input="event => onNumInput(event, 'quantityMin')"
+                                class="text-input form-control small-input" title="Cantidad mínima" placeholder="2"
+                                min="0" v-model.number="quantityMin" @input="event => onNumInput(event, 'quantityMin')"
                                 @keydown="preventInvalidKey">
                             <span class="hyphen">-</span>
                             <input type="number" id="product-quantity-max-input"
-                                class="text-input form-control small-input" placeholder="15" min="0"
-                                v-model.number="quantityMax" @input="event => onNumInput(event, 'quantityMax')"
+                                class="text-input form-control small-input" title="Cantidad máxima" placeholder="15"
+                                min="0" v-model.number="quantityMax" @input="event => onNumInput(event, 'quantityMax')"
                                 @keydown="preventInvalidKey">
-                            <button class="btn copy-btn" @click="copyValue($event, 'quantity')">
+                            <button class="btn copy-btn" title="Copiar valor mínimo al valor máximo"
+                                @click="copyValue($event, 'quantity')">
                                 <Clipboard />
                             </button>
                         </div>
@@ -296,13 +297,14 @@ function onNumInput(event: Event, field: string) {
                             class="text-label">Fecha de compra</label>
                         <div class="range-group">
                             <input type="date" id="product-purchase-min-input"
-                                class="text-input form-control small-input" v-model="purchaseDateMin"
-                                :class="{ 'input-error': purchaseDateMinError }">
+                                class="text-input form-control small-input" title="Fecha de compra mínima"
+                                v-model="purchaseDateMin" :class="{ 'input-error': purchaseDateMinError }">
                             <span class=" separation-letter">a</span>
                             <input type="date" id="product-purchase-max-input"
-                                class="text-input form-control small-input" v-model="purchaseDateMax"
-                                :class="{ 'input-error': purchaseDateMaxError }">
-                            <button class="btn copy-btn" @click="copyValue($event, 'purchaseDate')">
+                                class="text-input form-control small-input" title="Fecha de compra máxima"
+                                v-model="purchaseDateMax" :class="{ 'input-error': purchaseDateMaxError }">
+                            <button class="btn copy-btn" title="Copiar fecha mínima a fecha máxima"
+                                @click="copyValue($event, 'purchaseDate')">
                                 <Clipboard />
                             </button>
                         </div>
@@ -313,18 +315,19 @@ function onNumInput(event: Event, field: string) {
                             class="text-label">Fecha de vencimiento</label>
                         <div class="range-group">
                             <input type="date" id="product-expiry-min-input" class="text-input form-control small-input"
-                                v-model="expiryDateMin" :disabled="noExpiry"
+                                title="Fecha de vencimiento mínima" v-model="expiryDateMin" :disabled="noExpiry"
                                 :class="{ 'input-error': expiryDateMinError }">
                             <span class="separation-letter">a</span>
                             <input type="date" id="product-expiry-max-input" class="text-input form-control small-input"
-                                v-model="expiryDateMax" :disabled="noExpiry"
+                                title="Fecha de vencimiento máxima" v-model="expiryDateMax" :disabled="noExpiry"
                                 :class="{ 'input-error': expiryDateMaxError }">
-                            <button class="btn copy-btn" @click="copyValue($event, 'expiryDate')" :disabled="noExpiry">
+                            <button class="btn copy-btn" title="Copiar fecha mínima a fecha máxima"
+                                @click="copyValue($event, 'expiryDate')" :disabled="noExpiry">
                                 <Clipboard />
                             </button>
                         </div>
                         <div class="no-expiry-container">
-                            <label id="no-expiry" for="no-expiry-checkbox">
+                            <label id="no-expiry" for="no-expiry-checkbox" title="Filtrar solo productos que no vencen">
                                 <input type="checkbox" id="no-expiry-checkbox" v-model="noExpiry">
                                 <span id="no-expiry-span">No expira</span>
                             </label>
@@ -335,13 +338,14 @@ function onNumInput(event: Event, field: string) {
                         <label id="product-cost-label" for="product-cost-input" class="text-label">Costo</label>
                         <div class="range-group range-group-number">
                             <input type="number" id="product-cost-min-input" class="text-input form-control small-input"
-                                placeholder="700" min="0" v-model.number="costMin"
+                                title="Costo mínimo en ARS" placeholder="700" min="0" v-model.number="costMin"
                                 @input="event => onNumInput(event, 'costMin')" @keydown="preventInvalidKey">
                             <span class="hyphen">-</span>
                             <input type="number" id="product-cost-max-input" class="text-input form-control small-input"
-                                placeholder="1800" min="0" v-model.number="costMax"
+                                title="Costo máximo en ARS" placeholder="1800" min="0" v-model.number="costMax"
                                 @input="event => onNumInput(event, 'costMax')" @keydown="preventInvalidKey">
-                            <button class="btn copy-btn" @click="copyValue($event, 'cost')">
+                            <button class="btn copy-btn" title="Copiar valor mínimo al valor máximo"
+                                @click="copyValue($event, 'cost')">
                                 <Clipboard />
                             </button>
                         </div>

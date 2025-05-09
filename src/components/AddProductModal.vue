@@ -197,11 +197,12 @@ function onCostInput(event: Event) {
 
                     <div class="form-group">
                         <label id="product-quantity-label" for="product-quantity-input" class="text-label">
-                            Unidades <span class="required-field">*</span>
+                            Unidades <span class="required-field" title="Requerido">*</span>
                         </label>
                         <input type="number" id="product-quantity-input" class="text-input form-control"
-                            :class="{ 'input-error': errors.quantity }" placeholder="6" min="0"
-                            v-model.number="quantity" @input="onQuantityInput" @keydown="preventInvalidKey" required>
+                            :class="{ 'input-error': errors.quantity }" title="Unidades del producto" placeholder="6"
+                            min="0" v-model.number="quantity" @input="onQuantityInput" @keydown="preventInvalidKey"
+                            required>
                         <div class="error-container">
                             <span v-if="errors.quantity" class="error-message">{{ errors.quantity }}</span>
                         </div>
@@ -213,17 +214,20 @@ function onCostInput(event: Event) {
                         <label id="product-purchase-label" for="product-purchase-input" class="text-label">Fecha de
                             compra</label>
                         <input type="date" id="product-purchase-input" class="text-input form-control"
-                            v-model="purchaseDate">
+                            title="Fecha de compra del producto" v-model="purchaseDate">
                         <div class="error-container"></div>
                     </div>
 
                     <div class="form-group">
                         <label id="product-expiry-label" for="product-expiry-input" class="text-label">Fecha de
-                            vencimiento <span class="required-field">*</span></label>
+                            vencimiento
+                            <span class="required-field" title="Requerido">*</span>
+                        </label>
                         <input type="date" id="product-expiry-input" class="text-input form-control"
-                            v-model="expiryDate" :disabled="noExpiry" required>
+                            title="Fecha de vencimiento del producto" v-model="expiryDate" :disabled="noExpiry"
+                            required>
                         <div class="no-expiry-container">
-                            <label id="no-expiry" for="no-expiry-checkbox">
+                            <label id="no-expiry" for="no-expiry-checkbox" title="El producto no se vence">
                                 <input type="checkbox" id="no-expiry-checkbox" v-model="noExpiry">
                                 <span id="no-expiry-span">No expira</span>
                             </label>
@@ -232,8 +236,9 @@ function onCostInput(event: Event) {
 
                     <div class="form-group">
                         <label id="product-cost-label" for="product-cost-input" class="text-label">Costo</label>
-                        <input type="number" id="product-cost-input" class="text-input form-control" placeholder="1500"
-                            min="0" v-model.number="cost" @input="onCostInput" @keydown="preventInvalidKey">
+                        <input type="number" id="product-cost-input" class="text-input form-control"
+                            title="Costo del producto en ARS" placeholder="1500" min="0" v-model.number="cost"
+                            @input="onCostInput" @keydown="preventInvalidKey">
                         <div class="error-container"></div>
                     </div>
                 </div>

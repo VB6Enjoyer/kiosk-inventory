@@ -11,20 +11,20 @@ const props = defineProps<{
     isAdvancedSearching: boolean
 }>();
 
-function simpleSearch(event: Event){
+function simpleSearch(event: Event) {
     const target = event.target as HTMLInputElement;
     searchValue.value = target.value;
     emit('search', searchValue.value);
 }
 
-function clearSearch(event: Event){
+function clearSearch(event: Event) {
     event.preventDefault();
     searchValue.value = "";
     (document.getElementById("search-input") as HTMLInputElement).value = "";
     emit('search', "");
 }
 
-function openSearchModal(){
+function openSearchModal() {
     isModalOpen.value = true;
     emit('open-search-modal', isModalOpen.value);
 }
@@ -32,22 +32,32 @@ function openSearchModal(){
 
 <template>
     <div id="search-container">
-        <input type="search" id="search-input" @input="simpleSearch" placeholder="Buscar" />
-        <Search v-if="searchValue.trim().length == 0 && !props.isAdvancedSearching" id="search-icon" class="search-bar-icon"/>
-        <button v-if="searchValue.trim().length > 0 || props.isAdvancedSearching" id="btn cancel-btn" @click="clearSearch"><X id="cancel-icon" class="search-bar-icon"/></button>
-        <button type="button" id="advanced-search-btn" class="btn btn-primary" @click="openSearchModal">Búsqueda avanzada</button>
+        <input type="search" id="search-input" title="Buscar productos por nombre y descripción" placeholder="Buscar"
+            @input="simpleSearch" />
+
+        <Search v-if="searchValue.trim().length == 0 && !props.isAdvancedSearching" id="search-icon"
+            class="search-bar-icon" />
+
+        <button v-if="searchValue.trim().length > 0 || props.isAdvancedSearching" id="btn cancel-btn"
+            title="Cancelar búsqueda" @click="clearSearch">
+            <X id="cancel-icon" class="search-bar-icon" />
+        </button>
+
+        <button type="button" id="advanced-search-btn" class="btn btn-primary" title="Abrir menú de búsqueda avanzada"
+            @click="openSearchModal">Búsqueda
+            avanzada</button>
     </div>
 </template>
 
 <style scoped>
-#search-container{
+#search-container {
     float: left;
     display: flex;
     flex-direction: row;
     width: 100%;
 }
 
-#search-input{
+#search-input {
     font-size: 18px;
     align-items: center;
     padding: 7px 10px 7px 40px;
@@ -59,11 +69,11 @@ input[type="search"]::-webkit-search-cancel-button {
     display: none;
 }
 
-#cancel-icon:hover{
+#cancel-icon:hover {
     color: red;
 }
 
-.search-bar-icon{
+.search-bar-icon {
     z-index: 1;
     position: absolute;
     top: 23%;
@@ -72,7 +82,7 @@ input[type="search"]::-webkit-search-cancel-button {
     height: 26px;
 }
 
-#advanced-search-btn{
+#advanced-search-btn {
     z-index: 1;
     position: absolute;
     top: 0px;
