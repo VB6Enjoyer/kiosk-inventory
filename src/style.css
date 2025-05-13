@@ -88,3 +88,27 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 400;
+  /* Regular */
+  font-display: swap;
+  /* Or 'block' - 'swap' shows fallback then swaps, 'block' waits a bit */
+  src: local('Nunito Regular'), local('Nunito-Regular'),
+    url('assets/fonts/nunito-v26-latin-regular.woff2') format('woff2');
+  /* Relative path to font file */
+}
+
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 600;
+  /* Regular */
+  font-display: swap;
+  /* Or 'block' - 'swap' shows fallback then swaps, 'block' waits a bit */
+  src: local('Nunito Bold'), local('Nunito-Bold'),
+    url('assets/fonts/nunito-v26-latin-600.woff2') format('woff2');
+  /* Relative path to font file */
+}

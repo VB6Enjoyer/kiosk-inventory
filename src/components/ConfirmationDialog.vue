@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, defineProps, defineEmits } from 'vue';
+import { defineProps, defineEmits } from 'vue';
 
 const props = defineProps({
     message: String,
@@ -42,7 +42,7 @@ function cancel() {
     align-items: center;
 }
 
-.btn{
+.btn {
     margin: 0 10px;
 }
 

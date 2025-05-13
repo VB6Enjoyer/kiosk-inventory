@@ -10,8 +10,6 @@ const expiryDate = ref<Date | String>(new Date());
 const noExpiry = ref<boolean>(false);
 const cost = ref<number>(0);
 
-// TODO Implement no expiry to products
-
 // Form validation state
 const errors = reactive({
     name: "",

@@ -11,8 +11,6 @@ const waitingForOperand = ref<boolean>(false);
 const currentOperation = ref<string>("");
 const justEvaluated = ref<boolean>(false);
 
-// TODO Fix floating values not being rounded because floating point math is shit
-
 const buttons = [
   { label: '7', value: '7', type: 'number' },
   { label: '8', value: '8', type: 'number' },
@@ -226,7 +224,7 @@ onUnmounted(() => {
 
     <div class="keypad">
       <button v-for="btn in buttons" :key="btn.value" :title="btn.title || ''" @click="handleButton(btn)">{{ btn.label
-        }}</button>
+      }}</button>
     </div>
   </div>
 </template>

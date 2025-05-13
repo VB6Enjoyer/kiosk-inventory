@@ -3,9 +3,6 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { PanelLeftClose, PanelRightClose } from 'lucide-vue-next';
 
-// TODO Use alternative API as fallback
-// TODO Perhaps implement a better font
-
 const oficial = ref(0);
 const blue = ref(0);
 const bolsa = ref(0);
@@ -18,31 +15,85 @@ const real = ref(0);
 const uruguayo = ref(0);
 const isHidden = ref<boolean>(false);
 const dollarContainer = ref<HTMLElement | null>(null);
+const apiUnavailable = ref<boolean>(false);
 
-// New state for hiding the container
+let intervalId: number | undefined;
 
+async function checkApiStatus() {
+    try {
+        const response = await axios.get("https://dolarapi.com/v1/estado");
+        if (response.data.estado == "Disponible") {
+            getValues("dolar");
+            return;
+        }
+    } catch (error) {
+        console.error(error);
+    }
 
-function getValues() {
-    axios.get("https://dolarapi.com/v1/dolares")
-        .then(response => {
-            oficial.value = response.data[0].venta;
-            blue.value = response.data[1].venta;
-            bolsa.value = response.data[2].venta;
-            contadoConLiqui.value = response.data[3].venta;
-            mayorista.value = response.data[4].venta;
-            cripto.value = response.data[5].venta;
-            tarjeta.value = response.data[6].venta;
-        })
-        .catch(error => {
-            console.error(error);
-        });
+    try {
+        const response = await axios.get("https://maxcomperatore.online/");
+        if (response.data.status == "OK") {
+            getValues("argento");
+            return;
+        }
+    } catch (error) {
+        console.error(error);
+    }
 
-    axios.get("https://dolarapi.com/v1/cotizaciones")
-        .then(response => {
-            euro.value = response.data[1].venta;
-            real.value = response.data[2].venta;
-            uruguayo.value = response.data[4].venta;
-        });
+    getValues("none");
+    apiUnavailable.value = true;
+    return;
+}
+
+function getValues(apiUsed: string) {
+    if (apiUsed == "dolar") {
+        axios.get("https://dolarapi.com/v1/dolares")
+            .then(response => {
+                oficial.value = response.data[0].venta;
+                blue.value = response.data[1].venta;
+                bolsa.value = response.data[2].venta;
+                contadoConLiqui.value = response.data[3].venta;
+                mayorista.value = response.data[4].venta;
+                cripto.value = response.data[5].venta;
+                tarjeta.value = response.data[6].venta;
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+        axios.get("https://dolarapi.com/v1/cotizaciones")
+            .then(response => {
+                euro.value = response.data[1].venta;
+                real.value = response.data[2].venta;
+                uruguayo.value = response.data[4].venta;
+            });
+
+        apiUnavailable.value = false;
+        if (isHidden.value) slideRight();
+    } else if (apiUsed == "argento") {
+        axios.get("https://maxcomperatore.online/cotizaciones")
+            .then(response => {
+                oficial.value = response.data.usd.oficial.venta.split("ARS")[0].trim();
+                blue.value = response.data.usd.blue.venta.split("ARS")[0].trim();
+                bolsa.value = response.data.usd.MEP.venta.split("ARS")[0].trim();
+                contadoConLiqui.value = response.data.usd.CCL.venta.split("ARS")[0].trim();
+                mayorista.value = response.data.usd.Mayorista.venta.split("ARS")[0].trim();
+                cripto.value = response.data.usd.Cripto.venta.split("ARS")[0].trim();
+                tarjeta.value = response.data.usd.Tarjeta.venta.split("ARS")[0].trim();
+
+                euro.value = response.data.euro.venta.split("ARS")[0].trim();
+                real.value = response.data.real.venta.split("ARS")[0].trim();
+                uruguayo.value = response.data.uru.venta.split("ARS")[0].trim();
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+        apiUnavailable.value = false;
+        if (isHidden.value) slideRight();
+    } else {
+        slideLeft();
+    }
 }
 
 function formatCurrency(value: number): string {
@@ -51,18 +102,17 @@ function formatCurrency(value: number): string {
         : '';
 }
 
-// Handler for hiding the container
-function hideContainer() {
-    isHidden.value = true;
-}
-
 onMounted(() => {
-    getValues();
+    checkApiStatus();
+    intervalId = window.setInterval(() => {
+        checkApiStatus();
+    }, 3600000); // Update every hour.
+    // Could possibly implement this interval only on weekdays between 10:00 and 16:00 since all values but crypto remain static outside of this timeframe
 });
 
 function slideLeft() {
     if (dollarContainer.value) {
-        dollarContainer.value.style.transform = 'translateX(-96%)';
+        dollarContainer.value.style.transform = 'translateX(-96.5%)';
         dollarContainer.value.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
         isHidden.value = true;
     }
@@ -132,7 +182,9 @@ function slideRight() {
         </span>
 
         <div id="hide-button-container">
-            <button id="hide-button" @click="isHidden ? slideRight() : slideLeft()">
+            <button id="hide-button" :disabled="apiUnavailable"
+                :title="apiUnavailable ? 'No disponible actualmente' : 'Mostrar/ocultar panel'"
+                @click="isHidden ? slideRight() : slideLeft()">
                 <component :is="isHidden ? PanelRightClose : PanelLeftClose" class="hide-icon" />
             </button>
         </div>
@@ -151,6 +203,7 @@ function slideRight() {
     border-left: none;
     border-right: none;
     height: 75px;
+    font-family: 'Nunito', Arial, Helvetica, sans-serif;
 }
 
 #hideable-container {
@@ -177,12 +230,7 @@ function slideRight() {
     padding: 0;
     padding-bottom: 1px;
     border: none;
-}
-
-.hide-icon {
-    width: 35px;
-    height: 35px;
-
+    user-select: none;
 }
 
 #hide-button:hover {
@@ -191,6 +239,20 @@ function slideRight() {
 
 #hide-button:focus {
     border: none;
+}
+
+#hide-button:disabled {
+    background-color: #777777;
+    color: #bbbbbb;
+}
+
+#hide-button:disabled:hover {
+    background-color: #777777;
+}
+
+.hide-icon {
+    width: 35px;
+    height: 35px;
 }
 
 .exchange-container {
@@ -203,11 +265,13 @@ function slideRight() {
 
 .exchange-title {
     font-size: 30px;
+    font-weight: 400;
     user-select: none;
 }
 
 .exchange-value {
-    font-size: 22px;
+    font-size: 23px;
+    font-weight: 500;
 }
 
 #oficial-container {
