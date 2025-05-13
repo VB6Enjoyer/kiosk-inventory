@@ -363,7 +363,7 @@ function onNumInput(event: Event, field: string) {
 
 <style scoped>
 #modal-container {
-    font-family: 'Roboto', sans-serif;
+    font-family: "Roboto", Helvetica, sans-serif;
     font-size: 18px;
     background-color: #2d2d2d;
     color: #f2f2f2;
@@ -461,6 +461,10 @@ function onNumInput(event: Event, field: string) {
     flex-direction: row;
     justify-content: space-between;
     width: 87.5%
+}
+
+input[type="number"] {
+    font-family: "Nunito", "Roboto", Arial, Helvetica, sans-serif;
 }
 
 .small-input {

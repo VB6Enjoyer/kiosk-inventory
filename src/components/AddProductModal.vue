@@ -252,7 +252,7 @@ function onCostInput(event: Event) {
 
 <style scoped>
 #modal-container {
-    font-family: 'Roboto', sans-serif;
+    font-family: "Roboto", Helvetica, sans-serif;
     font-size: 18px;
     background-color: #2d2d2d;
     color: #f2f2f2;
@@ -287,6 +287,10 @@ function onCostInput(event: Event) {
 
 .text-label {
     margin-bottom: 2px;
+}
+
+input[type="number"] {
+    font-family: "Nunito", "Roboto", Helvetica, sans-serif;
 }
 
 .text-input {

@@ -561,7 +561,7 @@ onBeforeUnmount(() => {
         </div>
 
         <div id="product-list-container">
-            <h1>Inventario</h1>
+            <h1 id="inventory-header">Inventario</h1>
 
             <div id="functions-container">
                 <div id="search-bar-container">
@@ -779,6 +779,7 @@ onBeforeUnmount(() => {
 
 #product-list-container {
     margin-top: 20px;
+    font-family: "Roboto", Helvetica, sans-serif;
 }
 
 #search-bar-container {
@@ -858,6 +859,7 @@ onBeforeUnmount(() => {
 
 #current-date {
     color: #000000;
+    font-family: "Roboto", Helvetica, sans-serif;
 }
 
 #table-container {
@@ -865,6 +867,7 @@ onBeforeUnmount(() => {
     overflow-y: auto;
     width: 100%;
     border: 1px ridge #a0a0a0;
+    font-family: "Roboto", Helvetica, sans-serif;
 }
 
 .product-table {
@@ -892,6 +895,7 @@ thead {
     border: 1px solid #ddd;
     padding: 8px 7px 8px 7px;
     font-size: 18px;
+    font-family: "Roboto", Helvetica, sans-serif;
 }
 
 th {
@@ -948,10 +952,11 @@ th {
 
 .product-quantity {
     width: 12%;
+    font-family: "Nunito", Arial, Helvetica, sans-serif !important;
 }
 
 .product-purchase-date {
-    width: 17.5%
+    width: 17.5%;
 }
 
 .product-expiry-date {
@@ -960,6 +965,7 @@ th {
 
 .product-cost {
     width: 13.5%;
+    font-family: "Nunito", Arial, Helvetica, sans-serif;
 }
 
 .actions {

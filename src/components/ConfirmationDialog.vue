@@ -40,6 +40,7 @@ function cancel() {
     display: flex;
     justify-content: center;
     align-items: center;
+    font-family: "Roboto", Helvetica, sans-serif;
 }
 
 .btn {

@@ -238,6 +238,7 @@ onUnmounted(() => {
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
   -webkit-app-region: drag;
+  font-family: "JetBrains Mono", "Roboto", Helvetica, sans-serif;
 }
 
 button {
