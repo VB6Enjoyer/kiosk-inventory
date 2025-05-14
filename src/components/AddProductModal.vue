@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive, defineEmits, watch, Ref } from 'vue';
 import type { Product } from "../interfaces/Product.ts"
+import { useFocusTrap } from '../utilities/focusTrap.ts';
 
 const name = ref<string>("");
 const description = ref<string>("");
@@ -9,6 +10,9 @@ const purchaseDate = ref<Date>(new Date());
 const expiryDate = ref<Date | String>(new Date());
 const noExpiry = ref<boolean>(false);
 const cost = ref<number>(0);
+
+const modalRef = ref<HTMLElement | null>(null);
+useFocusTrap(modalRef);
 
 // Form validation state
 const errors = reactive({
@@ -162,7 +166,7 @@ function onCostInput(event: Event) {
 </script>
 
 <template>
-    <div id="modal-container" class="modal-sm">
+    <div id="modal-container" class="modal-sm" ref="modalRef">
         <h2 id="form-header">Añadir producto</h2>
 
         <div id="form-container">
@@ -262,6 +266,10 @@ function onCostInput(event: Event) {
     border-radius: 5px;
 }
 
+#form-header {
+    user-select: none;
+}
+
 #form-container {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -287,6 +295,16 @@ function onCostInput(event: Event) {
 
 .text-label {
     margin-bottom: 2px;
+    user-select: none;
+}
+
+input {
+    transition: border 0.33s, box-shadow 0.33s;
+}
+
+input:focus {
+    border: 1px solid #f2f2f2;
+    box-shadow: 0 0 2px 0px #b6b6b6;
 }
 
 input[type="number"] {
@@ -324,6 +342,10 @@ input[type="number"] {
     background-color: rgba(255, 82, 82, 0.1);
 }
 
+.input-error:focus {
+    box-shadow: 0 0 2px 0px #ff5252;
+}
+
 .error-container {
     height: 12px;
 }
@@ -331,11 +353,13 @@ input[type="number"] {
 .error-message {
     color: #ff5252;
     font-size: 12px;
+    user-select: none;
 }
 
 .required-field {
     color: #ff5252;
     font-weight: bold;
+    cursor: help;
 }
 
 .no-expiry-container {
@@ -354,11 +378,28 @@ input[type="number"] {
     width: 16px;
     margin-right: 5px;
     transform: scale(1.2);
+    border: none;
+    box-shadow: none;
 }
 
 #no-expiry-span {
     padding: 0;
     margin-top: 2px;
     white-space: nowrap;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+#close-button,
+#submit-button {
+    transition: box-shadow 0.33s, background-color 0.33s;
+}
+
+#close-button:hover {
+    box-shadow: 0 0 3px 0 #ad263b;
+}
+
+#submit-button:hover {
+    box-shadow: 0 0 3px 0 #195dca;
 }
 </style>

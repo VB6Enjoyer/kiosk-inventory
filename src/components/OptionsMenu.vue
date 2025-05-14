@@ -6,8 +6,6 @@ import { electronAPI } from '../utilities/electronAPI'
 
 const emit = defineEmits(['close', 'export-pdf']);
 
-// TODO Close the Options Menu when the calculator is opened
-
 function openCalculator() {
     electronAPI.openCalculator();
     setTimeout(() => {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 import { PanelLeftClose, PanelRightClose } from 'lucide-vue-next';
 
@@ -108,6 +108,13 @@ onMounted(() => {
         checkApiStatus();
     }, 3600000); // Update every hour.
     // Could possibly implement this interval only on weekdays between 10:00 and 16:00 since all values but crypto remain static outside of this timeframe
+});
+
+onUnmounted(() => {
+    if (intervalId !== undefined) {
+        clearInterval(intervalId);
+        intervalId = undefined;
+    }
 });
 
 function slideLeft() {
@@ -231,6 +238,7 @@ function slideRight() {
     padding-bottom: 1px;
     border: none;
     user-select: none;
+    box-shadow: none;
 }
 
 #hide-button:hover {

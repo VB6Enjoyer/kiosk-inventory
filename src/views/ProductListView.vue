@@ -20,7 +20,6 @@ import { useToast } from 'vue-toastification';
 // TODO Optionally, permit normal searching while expiry-filtering, although the logic might be problematic
 // TODO Maybe offer the possibility to choose page size when exporting to PDF
 // TODO Add a currency converter?
-// TODO Allow hiding the exchange values
 
 const isAddProductModalOpen = ref<boolean>(false);
 const isSearchModalOpen = ref<boolean>(false);
