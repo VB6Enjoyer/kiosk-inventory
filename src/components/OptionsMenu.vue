@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { defineEmits } from 'vue';
+import { defineEmits, ref } from 'vue';
 import { Calculator, FileSpreadsheet, FileText, FileUp, BatteryCharging, Sun, CircleHelp, LogOut } from 'lucide-vue-next';
 import { X } from 'lucide-vue-next';
 import { electronAPI } from '../utilities/electronAPI'
+import { useFocusTrap } from '../utilities/focusTrap';
+
+const modalRef = ref<HTMLElement | null>(null);
+useFocusTrap(modalRef);
 
 const emit = defineEmits(['close', 'export-pdf']);
 
@@ -27,7 +31,7 @@ function exit() {
 </script>
 
 <template>
-    <div id="modal-container" class="modal-sm">
+    <div id="modal-container" class="modal-sm" ref="modalRef">
         <div id="modal-top-section">
             <div class="spacer"></div>
             <h2 id="options-header">Opciones</h2>
@@ -111,6 +115,7 @@ function exit() {
     flex: 1;
     text-align: center;
     margin: 0;
+    user-select: none;
 }
 
 #close-btn {
@@ -139,6 +144,11 @@ function exit() {
     column-gap: 6em;
     row-gap: 3em;
     padding: 25px 50px 50px 50px;
+}
+
+button,
+.icon {
+    transition: color 0.233s;
 }
 
 .option-btn {

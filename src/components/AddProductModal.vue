@@ -160,6 +160,7 @@ function preventInvalidKey(event: KeyboardEvent) {
 function onQuantityInput(event: Event) {
     preventNegative(event, quantity);
 }
+
 function onCostInput(event: Event) {
     preventNegative(event, cost);
 }
@@ -299,7 +300,7 @@ function onCostInput(event: Event) {
 }
 
 input {
-    transition: border 0.33s, box-shadow 0.33s;
+    transition: border 0.33s, box-shadow 0.33s, background-color 0.33s;
 }
 
 input:focus {
@@ -336,7 +337,6 @@ input[type="number"] {
     margin-top: 0;
 }
 
-/* Form validation styles */
 .input-error {
     border: 1px solid #ff5252 !important;
     background-color: rgba(255, 82, 82, 0.1);
@@ -396,10 +396,10 @@ input[type="number"] {
 }
 
 #close-button:hover {
-    box-shadow: 0 0 3px 0 #ad263b;
+    box-shadow: 0 0 2px 0 #ad263b;
 }
 
 #submit-button:hover {
-    box-shadow: 0 0 3px 0 #195dca;
+    box-shadow: 0 0 2px 0 #195dca;
 }
 </style>

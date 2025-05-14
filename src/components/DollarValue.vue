@@ -217,7 +217,7 @@ function slideRight() {
     display: flex;
     flex-direction: row;
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
-    border: 1px solid #f2f2f2;
+    border: 1px solid #acacac;
     border-left: none;
     border-right: none;
 }

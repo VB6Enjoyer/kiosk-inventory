@@ -2,6 +2,7 @@
 import { ref, computed, defineEmits, Ref } from 'vue';
 import { Clipboard } from 'lucide-vue-next';
 import { AdvancedSearch } from '../interfaces/AdvancedSearch.ts';
+import { useFocusTrap } from '../utilities/focusTrap.ts';
 
 const name = ref<string>("");
 const exactName = ref<boolean>(false);
@@ -16,6 +17,9 @@ const expiryDateMax = ref<Date | string>("");
 const noExpiry = ref<boolean>(false);
 const costMin = ref<number>(0);
 const costMax = ref<number>(0);
+const modalRef = ref<HTMLElement | null>(null);
+
+useFocusTrap(modalRef);
 
 const numRefMap = { quantityMin, quantityMax, costMin, costMax };
 
@@ -52,7 +56,6 @@ const expiryDateMaxError = computed(() =>
 
 const emit = defineEmits(['close', 'advanced-search']);
 
-// TODO Add form control
 // TODO Save fields once the advanced search is closed so that they load with the modal after using it once
 // TODO Add a "clear all fields" button
 
@@ -237,7 +240,7 @@ function onNumInput(event: Event, field: string) {
 </script>
 
 <template>
-    <div id="modal-container" class="modal-sm">
+    <div id="modal-container" class="modal-sm" ref="modalRef">
         <h2 id="form-header">Búsqueda avanzada</h2>
         <div id="form-container">
             <form id="product-form" @submit.prevent="advancedSearch">
@@ -374,25 +377,8 @@ function onNumInput(event: Event, field: string) {
     width: 100%;
 }
 
-.checkbox,
-.checkbox-label {
-    display: inline-block;
-    vertical-align: middle;
-}
-
-.checkbox {
-    width: 20px;
-    margin: 0;
-    padding: 0;
-    vertical-align: middle;
-}
-
-.checkbox-label {
-    width: 50%;
-}
-
-.form-checkbox-label {
-    width: 20%;
+#form-header {
+    user-select: none;
 }
 
 #form-container {
@@ -420,6 +406,20 @@ function onNumInput(event: Event, field: string) {
 
 .text-label {
     margin-bottom: 2px;
+    user-select: none;
+}
+
+input {
+    transition: border 0.33s, box-shadow 0.33s, background-color 0.33s;
+}
+
+input:focus {
+    border: 1px solid #f2f2f2;
+    box-shadow: 0 0 2px 0px #b6b6b6;
+}
+
+input[type="number"] {
+    font-family: "Nunito", "Roboto", Arial, Helvetica, sans-serif;
 }
 
 .text-input {
@@ -463,10 +463,6 @@ function onNumInput(event: Event, field: string) {
     width: 87.5%
 }
 
-input[type="number"] {
-    font-family: "Nunito", "Roboto", Arial, Helvetica, sans-serif;
-}
-
 .small-input {
     width: 42.5%;
     margin: 0;
@@ -476,9 +472,35 @@ input[type="number"] {
     width: 37.5%;
 }
 
+.checkbox,
+.checkbox-label {
+    display: inline-block;
+    vertical-align: middle;
+    user-select: none;
+}
+
+.checkbox {
+    width: 20px;
+    transform: scale(1.2);
+    margin: 0;
+    margin-bottom: 2px;
+    padding: 0;
+    vertical-align: middle;
+}
+
+.checkbox-label {
+    width: 50%;
+    vertical-align: middle;
+}
+
+.form-checkbox-label {
+    width: 20%;
+}
+
 .hyphen,
 .separation-letter {
     align-self: center;
+    user-select: none;
 }
 
 .hyphen {
@@ -503,6 +525,7 @@ input[type="number"] {
     border: none;
     padding: 0;
     margin: 0;
+    transition: color 0.25s;
 }
 
 .copy-btn:hover {
@@ -519,10 +542,12 @@ input[type="number"] {
     padding-top: 2px;
     width: 40%;
     align-items: center;
+    user-select: none;
 }
 
 #no-expiry-checkbox {
     width: 20px;
+    transform: scale(1.25);
     margin: 0;
     padding: 0;
     vertical-align: middle;
@@ -531,11 +556,27 @@ input[type="number"] {
 #no-expiry-span {
     padding: 0;
     margin-top: 2px;
+    margin-left: 4px;
+    font-size: 16px;
     white-space: nowrap;
 }
 
 .input-error {
-    border: 2px solid #ff5252 !important;
+    border: 1px solid #ff5252 !important;
     box-shadow: 0 0 4px #ff5252;
+}
+
+#close-button,
+#submit-button {
+    transition: box-shadow 0.33s, background-color 0.33s;
+    margin-top: 0;
+}
+
+#close-button:hover {
+    box-shadow: 0 0 2px 0 #ad263b;
+}
+
+#submit-button:hover {
+    box-shadow: 0 0 2px 0 #195dca;
 }
 </style>

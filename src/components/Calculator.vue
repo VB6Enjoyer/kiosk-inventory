@@ -311,6 +311,7 @@ button:hover {
   color: #aaaaaa;
   text-align: right;
   user-select: none;
+  -webkit-app-region: drag;
 }
 
 #calculator-input {

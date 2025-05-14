@@ -755,7 +755,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 #option-modal-btn {
-    color: #ffffff;
+    color: #dddddd;
     border: none;
     position: absolute;
     right: 5px;
@@ -765,6 +765,15 @@ onBeforeUnmount(() => {
 #grip-icon {
     width: 40px;
     height: 40px;
+    transition: color 0.2s;
+}
+
+#grip-icon:hover {
+    color: #ffffff;
+}
+
+#inventory-header {
+    user-select: none;
 }
 
 #functions-container {
@@ -798,11 +807,19 @@ onBeforeUnmount(() => {
     width: 15px;
 }
 
+button {
+    transition: background-color 0.33s, box-shadow 0.33s;
+}
+
 #open-modal-btn {
     position: absolute;
     left: 50%;
     height: 100%;
     transform: translateX(-50%);
+}
+
+#open-modal-btn:hover {
+    box-shadow: 0 0 2px 0 #207349;
 }
 
 .modal-overlay {
@@ -830,21 +847,23 @@ onBeforeUnmount(() => {
 }
 
 #two-weeks-btn {
-    color: rgb(0, 0, 0);
-    background-color: rgb(250, 220, 0);
+    color: #000000;
+    background-color: #fadc00;
 }
 
 #two-weeks-btn:hover {
-    background-color: rgb(210, 180, 0);
+    background-color: #d2b400;
+    box-shadow: 0 0 2px 0 #d2b400;
 }
 
 #one-week-btn {
     color: rgb(255, 255, 255);
-    background-color: rgb(255, 0, 0);
+    background-color: #ff0000;
 }
 
 #one-week-btn:hover {
-    background-color: rgb(175, 0, 0);
+    background-color: #af0000;
+    box-shadow: 0 0 2px 0 #af0000;
 }
 
 #expired-btn {
@@ -854,6 +873,7 @@ onBeforeUnmount(() => {
 
 #expired-btn:hover {
     background-color: #404040;
+    box-shadow: 0 0 2px 0 #404040;
 }
 
 #current-date {
@@ -898,9 +918,9 @@ thead {
 }
 
 th {
-    cursor: pointer;
     position: relative;
     user-select: none;
+    cursor: pointer;
 }
 
 #actions-header {
@@ -937,6 +957,7 @@ th {
     margin-right: 5px;
     color: rgba(255, 0, 0, 0.8);
     user-select: none;
+    cursor: help;
 }
 
 .product-description,
@@ -1011,6 +1032,10 @@ th {
     max-width: 100px;
     padding: 0;
     margin: 0;
+}
+
+.delete-btn:hover {
+    box-shadow: 0 0 2px 0 #b8293e;
 }
 
 .pdf-export .product-name {

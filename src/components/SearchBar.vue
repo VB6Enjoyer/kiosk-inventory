@@ -33,7 +33,7 @@ function openSearchModal() {
 <template>
     <div id="search-container">
         <input type="search" id="search-input" title="Buscar productos por nombre y descripción" placeholder="Buscar"
-            @input="simpleSearch" />
+            autocomplete="name" @input="simpleSearch" />
 
         <Search v-if="searchValue.trim().length == 0 && !props.isAdvancedSearching" id="search-icon"
             class="search-bar-icon" />
@@ -61,12 +61,32 @@ function openSearchModal() {
     font-size: 18px;
     align-items: center;
     padding: 7px 10px 7px 40px;
+    background-color: #3b3b3b;
+    border: 1px solid #acacac;
+    transition: border 0.33s, box-shadow 0.33s, background-color 0.33s;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+#search-input::placeholder {
+    color: #b6b6b6;
+}
+
+#search-input:focus {
+    outline: none;
+    border: 1px solid #f2f2f2;
+    box-shadow: 0 0 2px 0px #b6b6b6;
 }
 
 input[type="search"]::-webkit-search-cancel-button {
     -webkit-appearance: none;
     appearance: none;
     display: none;
+}
+
+#cancel-icon {
+    transition: color 0.25s;
 }
 
 #cancel-icon:hover {
@@ -76,7 +96,7 @@ input[type="search"]::-webkit-search-cancel-button {
 .search-bar-icon {
     z-index: 1;
     position: absolute;
-    top: 23%;
+    top: 22%;
     left: 10px;
     width: 26px;
     height: 26px;
@@ -87,6 +107,11 @@ input[type="search"]::-webkit-search-cancel-button {
     position: absolute;
     top: 0px;
     left: 307px;
-    padding: 10px;
+    padding: 8.5px 10px;
+
+}
+
+#advanced-search-btn:hover {
+    box-shadow: 0 0 2px 0 #195dca;
 }
 </style>
