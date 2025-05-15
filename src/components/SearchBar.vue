@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, defineProps } from 'vue';
+import { ref, defineProps, watch } from 'vue';
 import { Search, X } from 'lucide-vue-next';
 
 const searchValue = ref<string>("");
@@ -17,8 +17,7 @@ function simpleSearch(event: Event) {
     emit('search', searchValue.value);
 }
 
-function clearSearch(event: Event) {
-    event.preventDefault();
+function clearSearch() {
     searchValue.value = "";
     (document.getElementById("search-input") as HTMLInputElement).value = "";
     emit('search', "");
@@ -28,6 +27,17 @@ function openSearchModal() {
     isModalOpen.value = true;
     emit('open-search-modal', isModalOpen.value);
 }
+
+watch(
+    () => props.isAdvancedSearching,
+    (newVal) => {
+        if (newVal) {
+            searchValue.value = "";
+            const input = document.getElementById("search-input") as HTMLInputElement | null;
+            if (input) input.value = "";
+        }
+    }
+);
 </script>
 
 <template>
@@ -39,7 +49,7 @@ function openSearchModal() {
             class="search-bar-icon" />
 
         <button v-if="searchValue.trim().length > 0 || props.isAdvancedSearching" id="btn cancel-btn"
-            title="Cancelar búsqueda" @click="clearSearch">
+            title="Cancelar búsqueda" @click.prevent="clearSearch">
             <X id="cancel-icon" class="search-bar-icon" />
         </button>
 

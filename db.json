@@ -33,7 +33,7 @@
       "description": "Dulce de leche",
       "quantity": 4,
       "purchaseDate": "2024-11-05",
-      "expiryDate": "2025-05-15",
+      "expiryDate": "2025-05-20",
       "cost": 5000
     },
     {
@@ -50,7 +50,7 @@
       "name": "Alka",
       "description": "Menta",
       "quantity": 50,
-      "purchaseDate": "Tue Apr 08 2025 23:14:28 GMT-0300 (hora estándar de Argentina)",
+      "purchaseDate": "2025-04-09",
       "expiryDate": "2026-02-10",
       "cost": 1000
     },
@@ -95,7 +95,7 @@
       "name": "Test",
       "description": "Test 2",
       "quantity": 4,
-      "purchaseDate": "Mon May 05 2025 22:21:23 GMT-0300 (hora estándar de Argentina)",
+      "purchaseDate": "2022-05-06",
       "expiryDate": "2024-02-29",
       "cost": 0
     },
@@ -113,7 +113,7 @@
       "name": "Test 3",
       "description": "",
       "quantity": 5,
-      "purchaseDate": "Mon May 05 2025 23:08:57 GMT-0300 (hora estándar de Argentina)",
+      "purchaseDate": "2025-05-01",
       "expiryDate": "No expira",
       "cost": 0
     },
@@ -122,7 +122,7 @@
       "name": "test 5",
       "description": "",
       "quantity": 1,
-      "purchaseDate": "Mon May 05 2025 23:09:02 GMT-0300 (hora estándar de Argentina)",
+      "purchaseDate": "2025-05-12",
       "expiryDate": "No expira",
       "cost": 0
     },
@@ -131,7 +131,7 @@
       "name": "Test 6",
       "description": "",
       "quantity": 5,
-      "purchaseDate": "Mon May 05 2025 23:09:06 GMT-0300 (hora estándar de Argentina)",
+      "purchaseDate": "2025-05-13",
       "expiryDate": "No expira",
       "cost": 0
     },
@@ -140,18 +140,27 @@
       "name": "test 5",
       "description": "",
       "quantity": 3,
-      "purchaseDate": "Mon May 05 2025 23:09:02 GMT-0300 (hora estándar de Argentina)",
+      "purchaseDate": "2025-05-03",
       "expiryDate": "No expira",
       "cost": 0
     },
     {
       "id": 23,
-      "name": "test 5",
+      "name": "Test",
+      "description": "",
+      "quantity": 1,
+      "purchaseDate": "N/A",
+      "expiryDate": "2025-06-07",
+      "cost": 0
+    },
+    {
+      "id": 24,
+      "name": "Test",
       "description": "",
       "quantity": 4,
-      "purchaseDate": "Mon May 05 2025 23:09:02 GMT-0300 (hora estándar de Argentina)",
+      "purchaseDate": "2025-05-01",
       "expiryDate": "No expira",
-      "cost": 4
+      "cost": 100
     }
   ]
 }

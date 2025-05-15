@@ -8,7 +8,7 @@ import { useFocusTrap } from '../utilities/focusTrap';
 const modalRef = ref<HTMLElement | null>(null);
 useFocusTrap(modalRef);
 
-const emit = defineEmits(['close', 'export-pdf']);
+const emit = defineEmits(['close', 'export-pdf', 'export-excel']);
 
 function openCalculator() {
     electronAPI.openCalculator();
@@ -19,6 +19,10 @@ function openCalculator() {
 
 function exportPDF() {
     emit('export-pdf');
+}
+
+function exportExcel() {
+    emit('export-excel');
 }
 
 function closeMenu() {
@@ -47,7 +51,8 @@ function exit() {
                 <p class="btn-text">Calculadora</p>
             </button>
 
-            <button id="excel-btn" class="btn option-btn" title="Exportar a hoja de cálculo de Excel">
+            <button id="excel-btn" class="btn option-btn" title="Exportar a hoja de cálculo de Excel"
+                @click.prevent="exportExcel">
                 <FileSpreadsheet id="excel-icon" class="icon" />
                 <p class="btn-text">Exportar a Excel</p>
             </button>

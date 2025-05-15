@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, defineEmits, Ref } from 'vue';
+import { ref, computed, defineEmits, Ref, onMounted, watch } from 'vue';
 import { Clipboard } from 'lucide-vue-next';
 import { AdvancedSearch } from '../interfaces/AdvancedSearch.ts';
 import { useFocusTrap } from '../utilities/focusTrap.ts';
@@ -12,31 +12,41 @@ const quantityMin = ref<number>(0);
 const quantityMax = ref<number>(0);
 const purchaseDateMin = ref<Date | string>("");
 const purchaseDateMax = ref<Date | string>("");
+const unknownPurchaseDate = ref<boolean>(false);
 const expiryDateMin = ref<Date | string>("");
 const expiryDateMax = ref<Date | string>("");
 const noExpiry = ref<boolean>(false);
 const costMin = ref<number>(0);
 const costMax = ref<number>(0);
+const currentSearch = ref<AdvancedSearch | undefined>(undefined);
 const modalRef = ref<HTMLElement | null>(null);
 
 useFocusTrap(modalRef);
 
 const numRefMap = { quantityMin, quantityMax, costMin, costMax };
 
+const props = defineProps<{
+    currentSearch?: AdvancedSearch
+}>();
+
 const purchaseDateMinError = computed(() =>
     getDateInputError({
         value: purchaseDateMin.value,
         pairValue: purchaseDateMax.value,
-        isMin: true
+        isMin: true,
+        rangeEnabled: !unknownPurchaseDate.value
     })
 );
+
 const purchaseDateMaxError = computed(() =>
     getDateInputError({
         value: purchaseDateMax.value,
         pairValue: purchaseDateMin.value,
-        isMin: false
+        isMin: false,
+        rangeEnabled: !unknownPurchaseDate.value
     })
 );
+
 const expiryDateMinError = computed(() =>
     getDateInputError({
         value: expiryDateMin.value,
@@ -45,6 +55,7 @@ const expiryDateMinError = computed(() =>
         rangeEnabled: !noExpiry.value
     })
 );
+
 const expiryDateMaxError = computed(() =>
     getDateInputError({
         value: expiryDateMax.value,
@@ -56,17 +67,10 @@ const expiryDateMaxError = computed(() =>
 
 const emit = defineEmits(['close', 'advanced-search']);
 
-// TODO Save fields once the advanced search is closed so that they load with the modal after using it once
-// TODO Add a "clear all fields" button
-
 async function advancedSearch() {
-    // TODO Give visual feedback when fields are empty
-    // TODO Don't allow search with empty fields
-
     // @ts-ignore
     const products = await window.api.loadProducts();
 
-    // TODO The search function for dates as ranges is... probably stupid. Should better just seek purchase-expiry ranges instead.
     const advancedSearch: AdvancedSearch = {
         name: name.value.trim(),
         exactName: exactName.value,
@@ -76,6 +80,7 @@ async function advancedSearch() {
         quantityMax: quantityMax.value,
         purchaseDateMin: purchaseDateMin.value.toString() || "",
         purchaseDateMax: purchaseDateMax.value.toString() || "",
+        unknownPurchaseDate: unknownPurchaseDate.value || false,
         expiryDateMin: expiryDateMin.value.toString() || "",
         expiryDateMax: expiryDateMax.value.toString() || "",
         noExpiry: noExpiry.value || false,
@@ -83,14 +88,13 @@ async function advancedSearch() {
         costMax: costMax.value,
     };
 
-    // TODO Add a toast when an item has been submitted or to show errors
     emit('advanced-search', advancedSearch); // Emit the product data
     closeModal();
 }
 
 function copyValue(e: Event, field: string) {
     e.preventDefault();
-    // TODO Consider assigning the min value to the max in cost when the min surpasses the max, since it might be better than just copying
+
     switch (field) {
         case "quantity":
             quantityMax.value = quantityMin.value;
@@ -159,10 +163,12 @@ function getDateInputError({
 
 const isFormValid = computed(() => {
     // Purchase date range
-    const purchaseDatesValid = isValidDateRange(
-        purchaseDateMin.value as string,
-        purchaseDateMax.value as string
-    );
+    const purchaseDatesValid = unknownPurchaseDate.value
+        ? true
+        : isValidDateRange(
+            purchaseDateMin.value as string,
+            purchaseDateMax.value as string
+        );
 
     // Expiry date range (only if noExpiry is false)
     const expiryDatesValid = noExpiry.value
@@ -237,6 +243,50 @@ function preventInvalidKey(event: KeyboardEvent) {
 function onNumInput(event: Event, field: string) {
     preventNegative(event, numRefMap[field]);
 }
+
+onMounted(() => {
+    if (currentSearch) {
+        // Load all saved search values
+        name.value = props.currentSearch?.name || "";
+        exactName.value = props.currentSearch?.exactName || false;
+        description.value = props.currentSearch?.description || "";
+        exactDescription.value = props.currentSearch?.exactDescription || false;
+        quantityMin.value = props.currentSearch?.quantityMin || 0;
+        quantityMax.value = props.currentSearch?.quantityMax || 0;
+        purchaseDateMin.value = props.currentSearch?.purchaseDateMin || "";
+        purchaseDateMax.value = props.currentSearch?.purchaseDateMax || "";
+        unknownPurchaseDate.value = props.currentSearch?.unknownPurchaseDate || false;
+        expiryDateMin.value = props.currentSearch?.expiryDateMin || "";
+        expiryDateMax.value = props.currentSearch?.expiryDateMax || "";
+        noExpiry.value = props.currentSearch?.noExpiry || false;
+        costMin.value = props.currentSearch?.costMin || 0;
+        costMax.value = props.currentSearch?.costMax || 0;
+    }
+});
+
+// Quantity Min/Max Sync
+watch(quantityMin, (newMin) => {
+    if (quantityMax.value < newMin) {
+        quantityMax.value = newMin;
+    }
+});
+watch(quantityMax, (newMax) => {
+    if (newMax < quantityMin.value) {
+        quantityMin.value = newMax;
+    }
+});
+
+// Cost Min/Max Sync
+watch(costMin, (newMin) => {
+    if (costMax.value < newMin) {
+        costMax.value = newMin;
+    }
+});
+watch(costMax, (newMax) => {
+    if (newMax < costMin.value) {
+        costMin.value = newMax;
+    }
+});
 </script>
 
 <template>
@@ -301,15 +351,27 @@ function onNumInput(event: Event, field: string) {
                         <div class="range-group">
                             <input type="date" id="product-purchase-min-input"
                                 class="text-input form-control small-input" title="Fecha de compra mínima"
-                                v-model="purchaseDateMin" :class="{ 'input-error': purchaseDateMinError }">
+                                v-model="purchaseDateMin" :disabled="unknownPurchaseDate"
+                                :class="{ 'input-error': purchaseDateMinError }">
                             <span class=" separation-letter">a</span>
                             <input type="date" id="product-purchase-max-input"
                                 class="text-input form-control small-input" title="Fecha de compra máxima"
-                                v-model="purchaseDateMax" :class="{ 'input-error': purchaseDateMaxError }">
+                                v-model="purchaseDateMax" :disabled="unknownPurchaseDate"
+                                :class="{ 'input-error': purchaseDateMaxError }">
                             <button class="btn copy-btn" title="Copiar fecha mínima a fecha máxima"
-                                @click="copyValue($event, 'purchaseDate')">
+                                @click="copyValue($event, 'purchaseDate')" :disabled="unknownPurchaseDate">
                                 <Clipboard />
                             </button>
+                        </div>
+
+                        <div class="date-checkbox-container">
+                            <label id="unknown-purchase-date" class="date-checkbox-label"
+                                for="unknown-purchase-date-checkbox"
+                                title="Filtrar solo productos cuya fecha de compra es desconocida">
+                                <input type="checkbox" id="unknown-purchase-date-checkbox" class="date-checkbox"
+                                    v-model="unknownPurchaseDate">
+                                <span id="unknown-purchase-date-span" class="date-checkbox-span">Desconocida</span>
+                            </label>
                         </div>
                     </div>
 
@@ -329,10 +391,12 @@ function onNumInput(event: Event, field: string) {
                                 <Clipboard />
                             </button>
                         </div>
-                        <div class="no-expiry-container">
-                            <label id="no-expiry" for="no-expiry-checkbox" title="Filtrar solo productos que no vencen">
-                                <input type="checkbox" id="no-expiry-checkbox" v-model="noExpiry">
-                                <span id="no-expiry-span">No expira</span>
+
+                        <div class="date-checkbox-container">
+                            <label id="no-expiry" class="date-checkbox-label" for="no-expiry-checkbox"
+                                title="Filtrar solo productos que no vencen">
+                                <input type="checkbox" id="no-expiry-checkbox" class="date-checkbox" v-model="noExpiry">
+                                <span id="no-expiry-span" class="date-checkbox-span">No expira</span>
                             </label>
                         </div>
                     </div>
@@ -402,6 +466,10 @@ function onNumInput(event: Event, field: string) {
     grid-column: span 1;
     text-align: left;
     margin: 12px 0;
+}
+
+.form-group {
+    margin: 20px 0;
 }
 
 .text-label {
@@ -484,12 +552,11 @@ input[type="number"] {
     transform: scale(1.2);
     margin: 0;
     margin-bottom: 2px;
-    padding: 0;
     vertical-align: middle;
 }
 
 .checkbox-label {
-    width: 50%;
+    width: 30%;
     vertical-align: middle;
 }
 
@@ -532,11 +599,11 @@ input[type="number"] {
     color: white;
 }
 
-.no-expiry-container {
-    height: 12px;
+.date-checkbox-container {
+    height: 0px;
 }
 
-#no-expiry {
+.date-checkbox-label {
     font-size: 16px;
     display: flex;
     padding-top: 2px;
@@ -545,7 +612,7 @@ input[type="number"] {
     user-select: none;
 }
 
-#no-expiry-checkbox {
+.date-checkbox {
     width: 20px;
     transform: scale(1.25);
     margin: 0;
@@ -553,7 +620,7 @@ input[type="number"] {
     vertical-align: middle;
 }
 
-#no-expiry-span {
+.date-checkbox-span {
     padding: 0;
     margin-top: 2px;
     margin-left: 4px;

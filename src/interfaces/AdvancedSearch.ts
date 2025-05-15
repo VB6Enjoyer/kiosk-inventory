@@ -7,6 +7,7 @@ export interface AdvancedSearch {
     quantityMax: number;
     purchaseDateMin: string;
     purchaseDateMax: string;
+    unknownPurchaseDate: boolean;
     expiryDateMin: string;
     expiryDateMax: string;
     noExpiry: boolean;

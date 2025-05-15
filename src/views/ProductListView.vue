@@ -6,20 +6,22 @@ import type { Product } from "../interfaces/Product.ts";
 import { LucideTrash2, ArrowDownAZ, ArrowUpZA, ArrowDown01, ArrowUp10, CalendarArrowDown, CalendarArrowUp, Ban, TriangleAlert, Grip } from 'lucide-vue-next';
 import { areObjectsEqual } from '../utilities/auxFunctions.ts';
 import SearchBar from '../components/SearchBar.vue';
-// @ts-ignore
-import { debounce } from 'lodash';
 import AdvancedSearchModal from '../components/AdvancedSearchModal.vue';
 import { AdvancedSearch } from '../interfaces/AdvancedSearch.ts';
 import OptionsMenu from '../components/OptionsMenu.vue';
 import DollarValue from "../components/DollarValue.vue"
 import html2pdf from 'html2pdf.js';
 import { useToast } from 'vue-toastification';
+// @ts-ignore
+import { debounce } from 'lodash';
+import { exportToExcel } from '../utilities/excelHandler.ts';
 
 // All //@ts-ignore are to prevent a pesky error which ignores that "window" refers to the Electron window
 // TODO Do extensive testing and write down any bugs to fix
 // TODO Optionally, permit normal searching while expiry-filtering, although the logic might be problematic
 // TODO Maybe offer the possibility to choose page size when exporting to PDF
 // TODO Add a currency converter?
+// TODO Add keyboard listeners for shortcurts and better QOL
 
 const isAddProductModalOpen = ref<boolean>(false);
 const isSearchModalOpen = ref<boolean>(false);
@@ -34,8 +36,9 @@ const newProductValue = ref<string>("");
 const editingField = ref<string | null>("");
 const sortingType = ref<string | undefined>("");
 const searchQuery = ref<string>("");
-const advancedSearchBackup = ref<AdvancedSearch>();
+const advancedSearchBackup = ref<AdvancedSearch | undefined>(undefined);
 const pdfContent = ref<HTMLElement | null>(null);
+
 let isSaving: boolean = false; // Flag to prevent multiple calls
 let isSearching: boolean = searchQuery.value.trim().length > 0;
 let isAdvancedSearching: boolean = false;
@@ -53,9 +56,19 @@ const sortFunctions = {
     quantity: (a: any, b: any, asc: boolean) => asc
         ? a.quantity - b.quantity
         : b.quantity - a.quantity,
-    purchaseDate: (a: any, b: any, asc: boolean) => asc
-        ? new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime()
-        : new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime(),
+    purchaseDate: (a: any, b: any, asc: boolean) => {
+        const UNKNOWN_DATE = "N/A";
+        const aUnknownDate = typeof a.purchaseDate === "string" && a.purchaseDate.trim().toLowerCase() === UNKNOWN_DATE;
+        const bUnknownDate = typeof b.purchaseDate === "string" && b.purchaseDate.trim().toLowerCase() === UNKNOWN_DATE;
+
+        if (aUnknownDate && bUnknownDate) return 0;
+        if (aUnknownDate) return asc ? 1 : -1;
+        if (bUnknownDate) return asc ? -1 : 1;
+
+        const aTime = new Date(a.purchaseDate).getTime();
+        const bTime = new Date(b.purchaseDate).getTime();
+        return asc ? aTime - bTime : bTime - aTime;
+    },
     expiryDate: (a: any, b: any, asc: boolean) => {
         const NO_EXPIRA = "no expira";
         const aNoExpira = typeof a.expiryDate === "string" && a.expiryDate.trim().toLowerCase() === NO_EXPIRA;
@@ -120,11 +133,13 @@ function search(query: string) {
     isSearching = searchQuery.value.trim().length > 0;
     isAdvancedSearching = false;
     debouncedSearch(searchQuery.value);
+    if (query == "") advancedSearchBackup.value = undefined;
 }
 
 function advancedSearch(search: AdvancedSearch) {
     let filteredProducts: Product[] = [...productsBackup.value];
     advancedSearchBackup.value = search;
+    searchQuery.value = "";
 
     if (search.name) {
         search.exactName
@@ -140,12 +155,18 @@ function advancedSearch(search: AdvancedSearch) {
 
     if (search.quantityMin != 0 && search.quantityMax != 0) filteredProducts = [...filteredProducts.filter(product => product.quantity >= search.quantityMin && product.quantity <= search.quantityMax)];
 
-    if (search.purchaseDateMin && search.purchaseDateMax) {
+    if (search.purchaseDateMin && search.purchaseDateMax && !search.unknownPurchaseDate) {
         filteredProducts = [...filteredProducts.filter(product => {
             const productDate = new Date(product.purchaseDate);
             const minDate = new Date(search.purchaseDateMin);
             const maxDate = new Date(search.purchaseDateMax);
             return productDate >= minDate && productDate <= maxDate;
+        })];
+    }
+
+    if (search.unknownPurchaseDate) {
+        filteredProducts = [...filteredProducts.filter(product => {
+            return product.purchaseDate == "N/A";
         })];
     }
 
@@ -434,8 +455,8 @@ function formatDate(dateString: string): string {
 }
 
 function isValidDate(dateString: string): boolean {
-    // Check for empty or "No expira"
-    if (dateString === "No expira") return true;
+    // Check for empty, "N/A" or "No expira"
+    if (dateString === "No expira" || dateString === "N/A") return true;
     if (!dateString) return false;
 
     // Try to parse the date
@@ -536,6 +557,10 @@ function exportPDF() {
         });
 }
 
+function exportExcel() {
+    exportToExcel(productsBackup.value)
+}
+
 onMounted(() => {
     loadProducts();
 });
@@ -555,7 +580,7 @@ onBeforeUnmount(() => {
             </button>
 
             <div v-if="isMenuOpen" class="modal-overlay">
-                <OptionsMenu @close="closeMenu" @export-pdf="exportPDF" />
+                <OptionsMenu @close="closeMenu" @export-pdf="exportPDF" @export-excel="exportExcel" />
             </div>
         </div>
 
@@ -569,7 +594,8 @@ onBeforeUnmount(() => {
                 </div>
 
                 <div v-if="isSearchModalOpen" class="modal-overlay">
-                    <AdvancedSearchModal @close="closeSearchModal" @advancedSearch="advancedSearch" />
+                    <AdvancedSearchModal :currentSearch="advancedSearchBackup" @close="closeSearchModal"
+                        @advancedSearch="advancedSearch" />
                 </div>
 
                 <button @click="openAddProductModal" id="open-modal-btn" class="btn btn-success">Añadir
@@ -698,7 +724,9 @@ onBeforeUnmount(() => {
                                 <td class="product-purchase-date product-date-cell">
                                     <span v-if="editingProductId !== product.id || editingField !== 'purchaseDate'"
                                         @click="editField(product.id, product.purchaseDate, 'purchaseDate')">
-                                        {{ formatDate(product.purchaseDate) }}
+                                        {{ product.purchaseDate === 'N/A'
+                                            ? "N/A"
+                                            : formatDate(product.purchaseDate) }}
                                     </span>
 
                                     <input v-else-if="editingField == 'purchaseDate'" type="date"

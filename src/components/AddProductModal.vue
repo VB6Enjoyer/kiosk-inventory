@@ -6,7 +6,8 @@ import { useFocusTrap } from '../utilities/focusTrap.ts';
 const name = ref<string>("");
 const description = ref<string>("");
 const quantity = ref<number>(0);
-const purchaseDate = ref<Date>(new Date());
+const purchaseDate = ref<Date | String>(new Date());
+const unknownPurchaseDate = ref<boolean>(false);
 const expiryDate = ref<Date | String>(new Date());
 const noExpiry = ref<boolean>(false);
 const cost = ref<number>(0);
@@ -53,6 +54,10 @@ async function addProduct() {
         return;
     }
 
+    if (unknownPurchaseDate) {
+        purchaseDate.value = "N/A";
+    }
+
     if (noExpiry) {
         expiryDate.value = "No expira";
     }
@@ -92,7 +97,9 @@ function isValidDate(dateValue: string | Date | null, allowEmpty = false): boole
 const isFormValid = computed(() => {
     const nameValid = name.value.trim() !== "";
     const quantityValid = quantity.value > 0;
-    const purchaseValid = isValidDate(purchaseDate.value, true); // purchase date can be empty
+    const purchaseValid = unknownPurchaseDate.value
+        ? true
+        : isValidDate(purchaseDate.value.toString(), false); // purchase date can be empty
     const expiryValid = noExpiry.value
         ? true
         : isValidDate(expiryDate.value.toString(), false); // must be non-empty and valid if not "No expira"
@@ -215,10 +222,22 @@ function onCostInput(event: Event) {
                 <div class="row">
                     <div class="form-group">
                         <label id="product-purchase-label" for="product-purchase-input" class="text-label">Fecha de
-                            compra</label>
+                            compra
+                            <span class="required-field" title="Requerido">*</span>
+                        </label>
                         <input type="date" id="product-purchase-input" class="text-input form-control"
-                            title="Fecha de compra del producto" v-model="purchaseDate">
-                        <div class="error-container"></div>
+                            title="Fecha de compra del producto" v-model="purchaseDate" :disabled="unknownPurchaseDate"
+                            required>
+
+                        <div class="date-checkbox-container">
+                            <label id="unknown-purchase-date" class="date-checkbox-label"
+                                for="unknown-purchase-date-checkbox"
+                                title="La fecha de compra del producto es desconocida">
+                                <input type="checkbox" id="unknown-purchase-date-checkbox" class="date-checkbox"
+                                    v-model="unknownPurchaseDate">
+                                <span id="unknown-purchase-date-span" class="date-checkbox-span">Desconocida</span>
+                            </label>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -229,10 +248,12 @@ function onCostInput(event: Event) {
                         <input type="date" id="product-expiry-input" class="text-input form-control"
                             title="Fecha de vencimiento del producto" v-model="expiryDate" :disabled="noExpiry"
                             required>
-                        <div class="no-expiry-container">
-                            <label id="no-expiry" for="no-expiry-checkbox" title="El producto no se vence">
-                                <input type="checkbox" id="no-expiry-checkbox" v-model="noExpiry">
-                                <span id="no-expiry-span">No expira</span>
+
+                        <div class="date-checkbox-container">
+                            <label id="no-expiry" class="date-checkbox-label" for="no-expiry-checkbox"
+                                title="El producto no se vence">
+                                <input type="checkbox" id="no-expiry-checkbox" class="date-checkbox" v-model="noExpiry">
+                                <span id="no-expiry-span" class="date-checkbox-span">No expira</span>
                             </label>
                         </div>
                     </div>
@@ -362,11 +383,11 @@ input[type="number"] {
     cursor: help;
 }
 
-.no-expiry-container {
+.date-checkbox-container {
     height: 12px;
 }
 
-#no-expiry {
+.date-checkbox-label {
     font-size: 16px;
     display: flex;
     padding-top: 2px;
@@ -374,7 +395,7 @@ input[type="number"] {
     align-items: center;
 }
 
-#no-expiry-checkbox {
+.date-checkbox {
     width: 16px;
     margin-right: 5px;
     transform: scale(1.2);
@@ -382,7 +403,7 @@ input[type="number"] {
     box-shadow: none;
 }
 
-#no-expiry-span {
+.date-checkbox-span {
     padding: 0;
     margin-top: 2px;
     white-space: nowrap;
