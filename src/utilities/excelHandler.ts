@@ -144,75 +144,105 @@ export async function exportToExcel(products: any[], fileName = "Productos.xlsx"
 }
 
 export async function importFromExcel(file: File): Promise<{ products: Product[]; failedCount: number }> {
-    const workbook = new ExcelJS.Workbook()
-    const arrayBuffer = await file.arrayBuffer()
-    await workbook.xlsx.load(arrayBuffer)
+    const workbook = new ExcelJS.Workbook();
+    const arrayBuffer = await file.arrayBuffer();
+    await workbook.xlsx.load(arrayBuffer);
 
-    const worksheet = workbook.getWorksheet(1) // Get the first worksheet
+    const worksheet = workbook.getWorksheet(1); // Get the first worksheet
     if (!worksheet) {
-        throw new Error("No worksheet found in the Excel file")
+        throw new Error("No worksheet found in the Excel file");
     }
 
-    const products: Product[] = []
-    let failedCount = 0
+    const products: Product[] = [];
+    let failedCount = 0;
 
-    // Skip the header row (row 1)
+    // --- Header detection logic ---
+    // Read the first row's cell values
+    const firstRow = worksheet.getRow(1);
+    const firstRowValues = [
+        firstRow.getCell(1).text.trim().toLowerCase(),
+        firstRow.getCell(2).text.trim().toLowerCase(),
+        firstRow.getCell(3).text.trim().toLowerCase(),
+        firstRow.getCell(4).text.trim().toLowerCase(),
+        firstRow.getCell(5).text.trim().toLowerCase(),
+        firstRow.getCell(6).text.trim().toLowerCase(),
+    ];
+
+    // Define your expected headers (add more variants if needed)
+    const expectedHeaders = [
+        "name",         // or "nombre"
+        "description",  // or "descripción"
+        "quantity",     // or "cantidad"
+        "purchase date",// or "fecha de compra"
+        "expiry date",  // or "fecha de vencimiento"
+        "cost"          // or "costo"
+    ];
+
+    // Simple header detection: check if at least 3 columns match expected headers
+    const headerMatchCount = expectedHeaders.reduce((count, header, idx) => {
+        return count + (firstRowValues[idx].includes(header) ? 1 : 0);
+    }, 0);
+
+    const hasHeader = headerMatchCount >= 3; // You can adjust the threshold
+
+    // Iterate over each row, conditionally skipping the first row if it's a header
     worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-        if (rowNumber === 1) return;
+        // Skip the first row only if it's a header
+        if (hasHeader && rowNumber === 1) return;
 
         try {
             // Get values from the row
-            const name = row.getCell(1).text.trim()
-            const description = row.getCell(2).text.trim()
-            const quantityCell = row.getCell(3)
-            const purchaseDateCell = row.getCell(4)
-            const expiryDateCell = row.getCell(5)
-            const costCell = row.getCell(6)
+            const name = row.getCell(1).text.trim();
+            const description = row.getCell(2).text.trim();
+            const quantityCell = row.getCell(3);
+            const purchaseDateCell = row.getCell(4);
+            const expiryDateCell = row.getCell(5);
+            const costCell = row.getCell(6);
 
             // Skip products without a name
             if (!name) {
-                failedCount++
-                return
+                failedCount++;
+                return;
             }
 
             // Parse quantity (default to 0 if missing)
-            let quantity = 0
+            let quantity = 0;
             if (!quantityCell.text.trim()) {
-                quantity = 0
+                quantity = 0;
             } else {
-                quantity = Number(quantityCell.value) || 0
+                quantity = Number(quantityCell.value) || 0;
             }
 
             // Parse purchase date (default to "N/A" if missing)
-            let purchaseDate = "N/A"
+            let purchaseDate = "N/A";
             if (purchaseDateCell.text.trim()) {
                 if (purchaseDateCell.text === "N/A") {
-                    purchaseDate = "N/A"
+                    purchaseDate = "N/A";
                 } else if (purchaseDateCell.value instanceof Date) {
-                    purchaseDate = purchaseDateCell.value.toISOString().split("T")[0]
+                    purchaseDate = purchaseDateCell.value.toISOString().split("T")[0];
                 } else {
-                    purchaseDate = purchaseDateCell.text
+                    purchaseDate = purchaseDateCell.text;
                 }
             }
 
             // Parse expiry date (default to "No expira" if missing)
-            let expiryDate = "No expira"
+            let expiryDate = "No expira";
             if (expiryDateCell.text.trim()) {
                 if (expiryDateCell.text === "No vence" || expiryDateCell.text === "No expira") {
-                    expiryDate = "No expira"
+                    expiryDate = "No expira";
                 } else if (expiryDateCell.value instanceof Date) {
-                    expiryDate = expiryDateCell.value.toISOString().split("T")[0]
+                    expiryDate = expiryDateCell.value.toISOString().split("T")[0];
                 } else {
-                    expiryDate = expiryDateCell.text
+                    expiryDate = expiryDateCell.text;
                 }
             }
 
             // Parse cost (default to 0 if missing)
-            let cost = 0
+            let cost = 0;
             if (!costCell.text.trim()) {
-                cost = 0
+                cost = 0;
             } else {
-                cost = Number(costCell.value) || 0
+                cost = Number(costCell.value) || 0;
             }
 
             // Create a new product
@@ -224,14 +254,14 @@ export async function importFromExcel(file: File): Promise<{ products: Product[]
                 purchaseDate,
                 expiryDate,
                 cost,
-            }
+            };
 
-            products.push(product)
+            products.push(product);
         } catch (error) {
             // If any error occurs during parsing, increment the failed count
-            failedCount++
+            failedCount++;
         }
-    })
+    });
 
-    return { products, failedCount }
+    return { products, failedCount };
 }

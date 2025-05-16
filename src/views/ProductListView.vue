@@ -29,7 +29,7 @@ const isMenuOpen = ref<boolean>(false);
 const products = ref<Product[]>([]);
 const productsBackup = ref<Product[]>([]);
 const searchedProducts = ref<Product[]>([]);
-const isConfirmDialogVisible = ref<boolean>(false);
+const isDeleting = ref<boolean>(false);
 const productIdToDelete = ref<number | null>(null);
 const editingProductId = ref<number | null>(null);
 const newProductValue = ref<string>("");
@@ -38,6 +38,10 @@ const sortingType = ref<string | undefined>("");
 const searchQuery = ref<string>("");
 const advancedSearchBackup = ref<AdvancedSearch | undefined>(undefined);
 const pdfContent = ref<HTMLElement | null>(null);
+const isImporting = ref<boolean>(false);
+const importedProducts = ref<any[]>([]);
+const importedFailedCount = ref(0);
+const importConfirmationMessage = ref('');
 
 let isSaving: boolean = false; // Flag to prevent multiple calls
 let isSearching: boolean = searchQuery.value.trim().length > 0;
@@ -342,7 +346,7 @@ async function deleteProduct(id: number) {
 
 function showDeleteConfirmation(id: number) {
     productIdToDelete.value = id;
-    isConfirmDialogVisible.value = true;
+    isDeleting.value = true;
 }
 
 async function confirmDelete() {
@@ -350,11 +354,11 @@ async function confirmDelete() {
         await deleteProduct(productIdToDelete.value);
         loadProducts(true);
     }
-    isConfirmDialogVisible.value = false;
+    isDeleting.value = false;
 }
 
 function cancelDelete() {
-    isConfirmDialogVisible.value = false;
+    isDeleting.value = false;
 }
 
 function editField(productId: number, currentValue: string, field: string) {
@@ -525,6 +529,18 @@ function preventInvalidKey(event: KeyboardEvent) {
     }
 }
 
+function formatUnitCost(cost: number, quantity: number): string {
+    if (!quantity) return '0';
+    const value = cost / quantity;
+    // Check if value has more than 2 decimal places
+    if (Number.isInteger(value)) return value.toString();
+    const decimals = value.toString().split('.')[1];
+    if (decimals && decimals.length > 2) {
+        return value.toFixed(2);
+    }
+    return value.toString();
+}
+
 function exportPDF() {
     if (productsBackup.value.length == 0) {
         toast.error("Error a exportar a PDF: La base de datos está vacía");
@@ -567,14 +583,12 @@ async function exportExcel() {
 }
 
 async function importExcel() {
-    // Create a file input element
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = '.xlsx, .xls';
     fileInput.style.display = 'none';
     document.body.appendChild(fileInput);
 
-    // Set up the change event handler
     fileInput.onchange = async (event) => {
         const target = event.target as HTMLInputElement;
         if (!target.files || target.files.length === 0) {
@@ -584,53 +598,108 @@ async function importExcel() {
 
         const file = target.files[0];
         try {
-            // Show loading toast
             const loadingToast = toast.info("Importando productos desde Excel...", {
                 timeout: false,
                 closeButton: false
             });
 
-            // Import the products
-            const { products: importedProducts, failedCount } = await importFromExcel(file);
+            const { products: imported, failedCount } = await importFromExcel(file);
 
-            // Remove the loading toast
             toast.dismiss(loadingToast);
 
-            if (importedProducts.length === 0) {
+            // Store imported products and failed count in state
+            importedProducts.value = imported;
+            importedFailedCount.value = failedCount;
+
+            if (imported.length === 0) {
                 toast.error("No se pudieron importar productos desde el archivo Excel.");
                 document.body.removeChild(fileInput);
                 return;
             }
 
-            // Show confirmation dialog with product count
-            if (confirm(`Se encontraron ${importedProducts.length} productos para importar. ¿Desea continuar?`)) {
-                // Add the products to the database
-                for (const product of importedProducts) {
-                    // @ts-ignore
-                    addProduct(product);
-                }
-
-                // Reload the products
-                await this.loadProducts(true);
-
-                // Show success message
-                let successMessage = `Se importaron ${importedProducts.length} productos con éxito.`;
-                if (failedCount > 0) {
-                    successMessage += ` ${failedCount} productos no pudieron ser importados debido a errores en el formato.`;
-                }
-                toast.success(successMessage);
-            }
+            // Show confirmation modal
+            importConfirmationMessage.value = `Se encontraron ${imported.length} productos para importar. ¿Desea reemplazar el inventario actual o agregar los productos?`;
+            showImportConfirmation();
         } catch (error) {
             console.error("Error importing Excel file:", error);
             toast.error(`Error al importar el archivo Excel: ${error instanceof Error ? error.message : 'Error desconocido'}`);
         } finally {
-            // Clean up the file input
             document.body.removeChild(fileInput);
         }
     };
 
-    // Trigger the file dialog
     fileInput.click();
+}
+
+function showImportConfirmation() {
+    closeMenu();
+    isImporting.value = true;
+}
+
+async function replaceFromImport() {
+    isImporting.value = false;
+    try {
+        // Wipe the database
+        for (const product of productsBackup.value) {
+            //@ts-ignore
+            await window.api.deleteProduct(product.id);
+        }
+
+        // Add imported products
+        for (const product of importedProducts.value) {
+            //@ts-ignore
+            await window.api.saveProduct(JSON.parse(JSON.stringify(product)));
+        }
+
+        await loadProducts(false);
+        isAdvancedSearching = false;
+
+        let successMessage = `Se reemplazó el inventario con ${importedProducts.value.length} productos.`;
+        const failedImports = importedFailedCount.value;
+        if (failedImports > 0) {
+            toast.error(`${failedImports} producto${failedImports == 1 ? '' : 's'} no ${failedImports == 1 ? 'pudo' : 'pudieron'} ser importado${failedImports == 1 ? '' : 's'}.`)
+        }
+        toast.success(successMessage);
+    } catch (error) {
+        toast.error("Error al reemplazar el inventario:", error.message);
+    }
+
+    // Clear state
+    importedProducts.value = [];
+    importedFailedCount.value = 0;
+}
+
+async function addFromImport() {
+    isImporting.value = false;
+
+    try {
+        for (const product of importedProducts.value) {
+
+            //@ts-ignore
+            await window.api.saveProduct(JSON.parse(JSON.stringify(product)));
+        }
+
+        await loadProducts(false);
+        isAdvancedSearching = false;
+
+        let successMessage = `Se agregaron ${importedProducts.value.length} productos al inventario.`;
+        if (importedFailedCount.value > 0) {
+            successMessage += ` ${importedFailedCount.value} productos no pudieron ser importados debido a errores en el formato.`;
+        }
+        toast.success(successMessage);
+    } catch (error) {
+        console.error(error);
+        toast.error("Error al agregar productos al inventario:", error.message);
+    }
+    // Clear state
+    importedProducts.value = [];
+    importedFailedCount.value = 0;
+}
+
+function cancelImport() {
+    isImporting.value = false;
+    importedProducts.value = [];
+    importedFailedCount.value = 0;
 }
 
 onMounted(() => {
@@ -832,7 +901,8 @@ onBeforeUnmount(() => {
                                         @keyup.enter="updateProduct(product.id)" @input="preventNegative"
                                         @keydown="preventInvalidKey" />
 
-                                    <span class="product-unit-cost"> (${{ product.cost / product.quantity }} c/u)</span>
+                                    <span class="product-unit-cost"> (${{ formatUnitCost(product.cost, product.quantity)
+                                    }} c/u)</span>
                                 </td>
 
                                 <td class="actions">
@@ -847,9 +917,13 @@ onBeforeUnmount(() => {
                 </div>
             </div>
 
-            <ConfirmationDialog class="modal-ov" v-if="isConfirmDialogVisible"
-                :message="'¿Estás seguro que querés eliminar este producto?'" :isVisible="isConfirmDialogVisible"
-                @confirm="confirmDelete" @cancel="cancelDelete" />
+            <ConfirmationDialog class="modal-ov" v-if="isDeleting"
+                :message="'¿Estás seguro que querés eliminar este producto?'" :isVisible="isDeleting" blueText="Si"
+                :isImporting="false" @confirm="confirmDelete" @cancel="cancelDelete" />
+
+            <ConfirmationDialog class="modal-ov" v-if="isImporting" :message="importConfirmationMessage"
+                :isVisible="isImporting" blueText="Agregar" redText="Reemplazar" :isImporting="true"
+                @confirm="addFromImport" @cancel="cancelImport" @replace="replaceFromImport" />
         </div>
     </div>
 </template>
