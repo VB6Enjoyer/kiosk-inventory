@@ -66,7 +66,7 @@ async function addProduct() {
     const products = await window.api.loadProducts();
 
     const product: Product = {
-        id: products[products.length - 1].id + 1,
+        id: products.length + Date.now(),
         name: name.value.trim(),
         description: description.value.trim(),
         quantity: quantity.value,

@@ -161,6 +161,15 @@
       "purchaseDate": "2025-05-01",
       "expiryDate": "No expira",
       "cost": 100
+    },
+    {
+      "id": 1747364645157,
+      "name": "New",
+      "description": "",
+      "quantity": 1,
+      "purchaseDate": "N/A",
+      "expiryDate": "No expira",
+      "cost": 0
     }
   ]
 }

@@ -13,6 +13,8 @@
   "dependencies": {
     "axios": "^1.8.4",
     "concurrently": "^9.1.2",
+    "exceljs": "^4.4.0",
+    "file-saver": "^2.0.5",
     "html2pdf.js": "^0.10.3",
     "lodash": "^4.17.21",
     "lowdb": "^7.0.1",
@@ -21,8 +23,7 @@
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
     "vue-toastification": "^2.0.0-rc.5",
-    "wait-on": "^8.0.3",
-    "xlsx": "^0.18.5"
+    "wait-on": "^8.0.3"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",

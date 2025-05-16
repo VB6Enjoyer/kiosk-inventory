@@ -14,7 +14,7 @@ import html2pdf from 'html2pdf.js';
 import { useToast } from 'vue-toastification';
 // @ts-ignore
 import { debounce } from 'lodash';
-import { exportToExcel } from '../utilities/excelHandler.ts';
+import { exportToExcel, importFromExcel } from '../utilities/excelHandler.ts';
 
 // All //@ts-ignore are to prevent a pesky error which ignores that "window" refers to the Electron window
 // TODO Do extensive testing and write down any bugs to fix
@@ -557,8 +557,80 @@ function exportPDF() {
         });
 }
 
-function exportExcel() {
-    exportToExcel(productsBackup.value)
+async function exportExcel() {
+    try {
+        await exportToExcel(productsBackup.value);
+        toast.success("Se exportó la base de datos a Excel con éxito.");
+    } catch (error) {
+        toast.error("No se pudo exportar a Excel:", error);
+    }
+}
+
+async function importExcel() {
+    // Create a file input element
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.xlsx, .xls';
+    fileInput.style.display = 'none';
+    document.body.appendChild(fileInput);
+
+    // Set up the change event handler
+    fileInput.onchange = async (event) => {
+        const target = event.target as HTMLInputElement;
+        if (!target.files || target.files.length === 0) {
+            document.body.removeChild(fileInput);
+            return;
+        }
+
+        const file = target.files[0];
+        try {
+            // Show loading toast
+            const loadingToast = toast.info("Importando productos desde Excel...", {
+                timeout: false,
+                closeButton: false
+            });
+
+            // Import the products
+            const { products: importedProducts, failedCount } = await importFromExcel(file);
+
+            // Remove the loading toast
+            toast.dismiss(loadingToast);
+
+            if (importedProducts.length === 0) {
+                toast.error("No se pudieron importar productos desde el archivo Excel.");
+                document.body.removeChild(fileInput);
+                return;
+            }
+
+            // Show confirmation dialog with product count
+            if (confirm(`Se encontraron ${importedProducts.length} productos para importar. ¿Desea continuar?`)) {
+                // Add the products to the database
+                for (const product of importedProducts) {
+                    // @ts-ignore
+                    addProduct(product);
+                }
+
+                // Reload the products
+                await this.loadProducts(true);
+
+                // Show success message
+                let successMessage = `Se importaron ${importedProducts.length} productos con éxito.`;
+                if (failedCount > 0) {
+                    successMessage += ` ${failedCount} productos no pudieron ser importados debido a errores en el formato.`;
+                }
+                toast.success(successMessage);
+            }
+        } catch (error) {
+            console.error("Error importing Excel file:", error);
+            toast.error(`Error al importar el archivo Excel: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+        } finally {
+            // Clean up the file input
+            document.body.removeChild(fileInput);
+        }
+    };
+
+    // Trigger the file dialog
+    fileInput.click();
 }
 
 onMounted(() => {
@@ -580,7 +652,8 @@ onBeforeUnmount(() => {
             </button>
 
             <div v-if="isMenuOpen" class="modal-overlay">
-                <OptionsMenu @close="closeMenu" @export-pdf="exportPDF" @export-excel="exportExcel" />
+                <OptionsMenu @close="closeMenu" @export-pdf="exportPDF" @export-excel="exportExcel"
+                    @import-excel="importExcel" />
             </div>
         </div>
 
