@@ -125,7 +125,7 @@ function cleanupCharging() {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: var(--confirmation-dialog-background-color);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -133,7 +133,7 @@ function cleanupCharging() {
 }
 
 .dialog-content {
-    background-color: #2f2f2f;
+    background-color: var(--modal-background-color);
     padding: 20px;
     padding-top: 0;
     margin-top: 0;
@@ -170,7 +170,7 @@ function cleanupCharging() {
     left: 0;
     top: 0;
     height: 100%;
-    background: rgba(0, 153, 255, 0.4);
+    background: var(--charging-bar-color);
     z-index: 1;
     transition: none;
     pointer-events: none;

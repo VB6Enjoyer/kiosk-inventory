@@ -432,8 +432,8 @@ watch(costMax, (newMax) => {
 #modal-container {
     font-family: "Roboto", Helvetica, sans-serif;
     font-size: 18px;
-    background-color: #2d2d2d;
-    color: #f2f2f2;
+    background-color: var(--modal-background-color);
+    color: var(--text-color);
     text-align: center;
     padding-top: 10px;
     margin: 0 25%;
@@ -482,8 +482,8 @@ input {
 }
 
 input:focus {
-    border: 1px solid #f2f2f2;
-    box-shadow: 0 0 2px 0px #b6b6b6;
+    border: 1px solid var(--text-color);
+    box-shadow: 0 0 2px 0px var(--input-focus-shadow);
 }
 
 input[type="number"] {
@@ -493,30 +493,20 @@ input[type="number"] {
 .text-input {
     grid-column: span 1;
     border: none;
-    background-color: #3a3a3a;
-    /* Darker background for contrast */
-    color: #f2f2f2;
-    /* Text color */
-    border: 1px solid #555;
-    /* Border color for contrast */
+    background-color: var(--text-input-background-color);
+    color: var(--text-color);
+    border: 1px solid var(--text-input-border-color);
     padding: 5px 10px;
-    /* Padding for spacing */
     border-radius: 4px;
-    /* Rounded corners */
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-    /* Subtle shadow for depth */
+    box-shadow: 0 0 5px var(--box-shadow-color);
     appearance: none;
-    /* Remove default styling */
     -webkit-appearance: none;
-    /* Remove default styling for WebKit browsers */
     -moz-appearance: none;
-    /* Remove default styling for Firefox */
     position: relative;
-    /* Position relative for pseudo-element */
 }
 
 .text-input::placeholder {
-    color: #b6b6b6;
+    color: var(--input-focus-shadow);
 }
 
 .form-button {
@@ -538,6 +528,11 @@ input[type="number"] {
 
 .small-input[type="date"] {
     width: 37.5%;
+}
+
+.small-input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(var(--date-input-calendar-icon-value));
+    cursor: pointer;
 }
 
 .checkbox,
@@ -587,7 +582,7 @@ input[type="number"] {
 }
 
 .copy-btn {
-    color: #c9c9c9;
+    color: var(--copy-button-color);
     background: none;
     border: none;
     padding: 0;
@@ -596,7 +591,7 @@ input[type="number"] {
 }
 
 .copy-btn:hover {
-    color: white;
+    color: var(--copy-button-hover-color);
 }
 
 .date-checkbox-container {
@@ -629,8 +624,8 @@ input[type="number"] {
 }
 
 .input-error {
-    border: 1px solid #ff5252 !important;
-    box-shadow: 0 0 4px #ff5252;
+    border: 1px solid var(--input-error-color);
+    box-shadow: 0 0 4px var(--input-error-color);
 }
 
 #close-button,
@@ -640,10 +635,10 @@ input[type="number"] {
 }
 
 #close-button:hover {
-    box-shadow: 0 0 2px 0 #ad263b;
+    box-shadow: 0 0 2px 0 var(--red-button-hover);
 }
 
 #submit-button:hover {
-    box-shadow: 0 0 2px 0 #195dca;
+    box-shadow: 0 0 2px 0 var(--blue-button-hover);
 }
 </style>

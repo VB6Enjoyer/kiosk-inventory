@@ -280,8 +280,8 @@ function onCostInput(event: Event) {
 #modal-container {
     font-family: "Roboto", Helvetica, sans-serif;
     font-size: 18px;
-    background-color: #2d2d2d;
-    color: #f2f2f2;
+    background-color: var(--modal-background-color);
+    color: var(--text-color);
     text-align: center;
     padding-top: 10px;
     margin: 0 33%;
@@ -325,23 +325,28 @@ input {
 }
 
 input:focus {
-    border: 1px solid #f2f2f2;
-    box-shadow: 0 0 2px 0px #b6b6b6;
+    border: 1px solid var(--text-color);
+    box-shadow: 0 0 2px 0px var(--input-focus-shadow);
 }
 
 input[type="number"] {
     font-family: "Nunito", "Roboto", Helvetica, sans-serif;
 }
 
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(var(--date-input-calendar-icon-value));
+    cursor: pointer;
+}
+
 .text-input {
     grid-column: span 1;
     border: none;
-    background-color: #3a3a3a;
-    color: #f2f2f2;
-    border: 1px solid #555;
+    background-color: var(--text-input-background-color);
+    color: var(--text-color);
+    border: 1px solid var(--text-input-border-color);
     padding: 5px 10px;
     border-radius: 4px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 5px var(--box-shadow-color);
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -349,7 +354,7 @@ input[type="number"] {
 }
 
 .text-input::placeholder {
-    color: #b6b6b6;
+    color: var(--input-focus-shadow);
 }
 
 .form-button {
@@ -359,12 +364,12 @@ input[type="number"] {
 }
 
 .input-error {
-    border: 1px solid #ff5252 !important;
-    background-color: rgba(255, 82, 82, 0.1);
+    border: 1px solid var(--input-error-color) !important;
+    background-color: var(--input-error-background-color);
 }
 
 .input-error:focus {
-    box-shadow: 0 0 2px 0px #ff5252;
+    box-shadow: 0 0 2px 0px var(--input-error-color);
 }
 
 .error-container {
@@ -372,13 +377,13 @@ input[type="number"] {
 }
 
 .error-message {
-    color: #ff5252;
+    color: var(--input-error-color);
     font-size: 12px;
     user-select: none;
 }
 
 .required-field {
-    color: #ff5252;
+    color: var(--input-error-color);
     font-weight: bold;
     cursor: help;
 }
@@ -417,10 +422,10 @@ input[type="number"] {
 }
 
 #close-button:hover {
-    box-shadow: 0 0 2px 0 #ad263b;
+    box-shadow: 0 0 2px 0 var(--red-button-hover);
 }
 
 #submit-button:hover {
-    box-shadow: 0 0 2px 0 #195dca;
+    box-shadow: 0 0 2px 0 var(--blue-button-hover);
 }
 </style>

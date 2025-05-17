@@ -1,11 +1,44 @@
 :root {
+  --body-background-color: #242424;
+  --text-color: #f2f2f2;
+  --modal-background-color: #2d2d2d;
+  --input-focus-shadow: #b6b6b6;
+  --text-input-background-color: #3a3a3a;
+  --text-input-border-color: #555555;
+  --copy-button-color: #c9c9c9;
+  --copy-button-hover-color: #ffffff;
+  --date-input-calendar-icon-value: 1;
+  --exchange-background-color: #2f2f2f;
+  --exchange-border-color: #acacac;
+  --exchange-hide-button-color: #f2f2f2;
+  --exchange-hide-button-hover-color: #dddddd;
+  --exchange-hide-icon-color: #333333;
+  --official-exchange-color: #85bb65;
+  --mayorista-exchange-color: #7699aa;
+  --uruguayo-exchange-color: #77acdc;
+  --option-button: #d1d1d1;
+  --search-bar-border-color: #acacac;
+  --options-modal-button: #dddddd;
+  --options-modal-icon-hover-color: #ffffff;
+  --table-container-border-color: #a0a0a0;
+  --expired-product-color: #505050;
+  --description-color: #acacac;
+  --table-text-input-background-color: #3a3a3a;
+
+  --input-error-color: #ff5252;
+  --input-error-background-color: #ff52521a;
+  --box-shadow-color: rgba(0, 0, 0, 0.3);
+  --red-button-hover: #ad263b;
+  --blue-button-hover: #195dca;
+  --confirmation-dialog-background-color: rgba(0, 0, 0, 0.5);
+  --charging-bar-color: rgba(0, 155, 255, 0.4);
+  --exchange-hide-button-disabled-color: #777777;
+  --exchange-hide-icon-hover-color: #484848;
+  --close-button-hover: #ff0000;
+
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87) !important;
-  background-color: #242424 !important;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -17,6 +50,75 @@
   -ms-overflow-style: none;
 }
 
+/* === Light Theme Variables === */
+.light-theme {
+  --body-background-color: #dbdbdb;
+  --text-color: #0d0d0d;
+  --modal-background-color: #d2d2d2;
+  --input-focus-shadow: #494949;
+  --text-input-background-color: #c5c5c5;
+  --text-input-border-color: #aaaaaa;
+  --copy-button-color: #363636;
+  --copy-button-hover-color: #000000;
+  --date-input-calendar-icon-value: 0;
+  --exchange-background-color: #d0d0d0;
+  --exchange-border-color: #b6b6b6;
+  --exchange-hide-button-color: #a3a3a3;
+  --exchange-hide-button-hover-color: #b6b6b6;
+  --exchange-hide-icon-color: #242424;
+  --official-exchange-color: #598043;
+  --mayorista-exchange-color: #386981;
+  --uruguayo-exchange-color: #4595e0;
+  --option-button: #2e2e2e;
+  --search-bar-border-color: #535353;
+  --options-modal-button: #333333;
+  --options-modal-icon-hover-color: #000000;
+  --table-container-border-color: #5f5f5f;
+  --expired-product-color: #afafaf;
+  --description-color: #484848;
+  --table-text-input-background-color: #f2f2f2;
+}
+
+/* === Dark Theme Variables === */
+.dark-theme {
+  --body-background-color: #242424;
+  --text-color: #f2f2f2;
+  --modal-background-color: #2d2d2d;
+  --input-focus-shadow: #b6b6b6;
+  --text-input-background-color: #3a3a3a;
+  --text-input-border-color: #555555;
+  --copy-button-color: #c9c9c9;
+  --copy-button-hover-color: #ffffff;
+  --date-input-calendar-icon-value: 1;
+  --exchange-background-color: #2f2f2f;
+  --exchange-border-color: #acacac;
+  --exchange-hide-button-color: #f2f2f2;
+  --exchange-hide-button-hover-color: #dddddd;
+  --exchange-hide-icon-color: #333333;
+  --official-exchange-color: #85bb65;
+  --mayorista-exchange-color: #7699aa;
+  --uruguayo-exchange-color: #77acdc;
+  --option-button: #d1d1d1;
+  --search-bar-border-color: #acacac;
+  --options-modal-button: #dddddd;
+  --options-modal-icon-hover-color: #ffffff;
+  --table-container-border-color: #a0a0a0;
+  --expired-product-color: #505050;
+  --description-color: #acacac;
+  --table-text-input-background-color: #3a3a3a;
+}
+
+/* === Global styles using variables === */
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--body-background-color) !important;
+  color: var(--text-color) !important;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -25,16 +127,6 @@ a {
 
 a:hover {
   color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-  background-color: #242424 !important;
-  color: rgba(255, 255, 255, 0.87) !important;
 }
 
 h1 {

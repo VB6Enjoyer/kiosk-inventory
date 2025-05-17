@@ -15,6 +15,7 @@ import { useToast } from 'vue-toastification';
 // @ts-ignore
 import { debounce } from 'lodash';
 import { exportToExcel, importFromExcel } from '../utilities/excelHandler.ts';
+import "../style.css"
 
 // All //@ts-ignore are to prevent a pesky error which ignores that "window" refers to the Electron window
 // TODO Do extensive testing and write down any bugs to fix
@@ -704,6 +705,8 @@ function cancelImport() {
 
 onMounted(() => {
     loadProducts();
+    localStorage.setItem('theme', "dark");
+
 });
 
 onBeforeUnmount(() => {
@@ -928,9 +931,9 @@ onBeforeUnmount(() => {
     </div>
 </template>
 
-<style scoped>
+<style>
 #option-modal-btn {
-    color: #dddddd;
+    color: var(--options-modal-button);
     border: none;
     position: absolute;
     right: 5px;
@@ -944,7 +947,7 @@ onBeforeUnmount(() => {
 }
 
 #grip-icon:hover {
-    color: #ffffff;
+    color: var(--options-modal-icon-hover-color);
 }
 
 #inventory-header {
@@ -1003,7 +1006,7 @@ button {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: var(--confirmation-dialog-background-color);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1060,8 +1063,10 @@ button {
     max-height: 78vh;
     overflow-y: auto;
     width: 100%;
-    border: 1px ridge #a0a0a0;
+    border: 1px ridge var(--table-container-border-color);
     font-family: "Roboto", Helvetica, sans-serif;
+    scrollbar-width: thin;
+    scrollbar-color: var(--expired-product-color) var(--body-background-color);
 }
 
 .product-table {
@@ -1070,7 +1075,7 @@ button {
 
 thead {
     background-color: #f2f2f2;
-    border: 1px solid #ddd;
+    border: 1px solid var(--options-modal-button);
     border-top: none;
 }
 
@@ -1086,7 +1091,7 @@ thead {
 }
 
 .product-table td {
-    border: 1px solid #ddd;
+    border: 1px solid var(--options-modal-button);
     padding: 8px 7px 8px 7px;
     font-size: 18px;
     font-family: "Roboto", Helvetica, sans-serif;
@@ -1119,8 +1124,7 @@ th {
 }
 
 .expired-product {
-    background-color: rgba(170, 170, 170, 0.33);
-    /* Gray background */
+    background-color: var(--expired-product-color);
     color: rgba(255, 0, 0, 0.8);
 }
 
@@ -1137,7 +1141,7 @@ th {
 
 .product-description,
 .product-unit-cost {
-    color: #acacac;
+    color: var(--description-color);
     font-size: 16px;
 }
 
@@ -1160,7 +1164,7 @@ th {
 
 .product-cost {
     width: 13.5%;
-    font-family: "Nunito", Arial, Helvetica, sans-serif;
+    font-family: "Nunito", Arial, Helvetica, sans-serif !important;
 }
 
 .actions {
@@ -1173,11 +1177,19 @@ th {
 }
 
 .edit-input {
+    background-color: var(--table-text-input-background-color);
+    color: var(--text-color);
+    border: 1px solid var(--text-color);
     text-align: center;
     width: 50%;
     height: 38px;
     max-height: 38px;
     max-width: 50%;
+}
+
+.edit-input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(var(--date-input-calendar-icon-value));
+    cursor: pointer;
 }
 
 .edit-input-primary {
@@ -1211,6 +1223,11 @@ th {
 
 .delete-btn:hover {
     box-shadow: 0 0 2px 0 #b8293e;
+}
+
+.pdf-export #table-container {
+    scrollbar-width: none;
+    scrollbar-color: transparent;
 }
 
 .pdf-export .product-name {
@@ -1273,30 +1290,5 @@ th {
 
 .pdf-export #current-date {
     visibility: visible;
-}
-
-#table-container::-webkit-scrollbar {
-    width: 12px;
-    background: #f2f2f2;
-}
-
-#table-container::-webkit-scrollbar-thumb {
-    background: #bfa000;
-    border-radius: 6px;
-    border: 2px solid #f2f2f2;
-}
-
-#table-container::-webkit-scrollbar-thumb:hover {
-    background: #d4b200;
-}
-
-#table-container::-webkit-scrollbar-track {
-    background: #f2f2f2;
-    border-radius: 6px;
-}
-
-#table-container {
-    scrollbar-width: thin;
-    scrollbar-color: #505050 #242424;
 }
 </style>

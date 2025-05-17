@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { defineEmits, ref } from 'vue';
-import { Calculator, FileSpreadsheet, FileText, FileUp, BatteryCharging, Sun, CircleHelp, LogOut } from 'lucide-vue-next';
+import { Calculator, FileSpreadsheet, FileText, FileUp, BatteryCharging, Sun, Moon, CircleHelp, LogOut } from 'lucide-vue-next';
 import { X } from 'lucide-vue-next';
 import { electronAPI } from '../utilities/electronAPI'
 import { useFocusTrap } from '../utilities/focusTrap';
 
+const currentTheme = ref<string>("dark");
 const modalRef = ref<HTMLElement | null>(null);
+
 useFocusTrap(modalRef);
 
 const emit = defineEmits(['close', 'export-pdf', 'export-excel', 'import-excel']);
@@ -27,6 +29,19 @@ function exportExcel() {
 
 function importExcel() {
     emit('import-excel');
+}
+
+function switchTheme() {
+    currentTheme.value = localStorage.getItem('theme') || "";
+    if (currentTheme.value == 'dark') {
+        document.documentElement.className = "light-theme";
+        localStorage.setItem('theme', "light");
+        currentTheme.value = "light";
+    } else {
+        document.documentElement.className = "dark-theme";
+        localStorage.setItem('theme', "dark");
+        currentTheme.value = "dark";
+    }
 }
 
 function closeMenu() {
@@ -77,9 +92,11 @@ function exit() {
                 <p class="btn-text">Modo Eco</p>
             </button>
 
-            <button id="color-mode-btn" class="btn option-btn" title="Esquema de colores claros">
-                <Sun id="color-mode-icon" class="icon" />
-                <p class="btn-text">Modo Claro</p>
+            <button id="color-mode-btn" class="btn option-btn" title="Cambiar esquema de colores"
+                @click.prevent="switchTheme">
+                <Sun id="sun-icon" class="color-mode-icon icon" v-if="currentTheme == 'dark'" />
+                <Moon id="moon-icon" class="color-mode-icon icon" v-if="currentTheme == 'light'" />
+                <p class="btn-text">{{ currentTheme == 'dark' ? "Modo Claro" : "Modo Oscuro" }}</p>
             </button>
 
             <button id="help-btn" class="btn option-btn" title="Abrir documento de ayuda">
@@ -99,8 +116,8 @@ function exit() {
 #modal-container {
     font-family: "Roboto", Helvetica, sans-serif;
     font-size: 18px;
-    background-color: #2d2d2d;
-    color: #f2f2f2;
+    background-color: var(--modal-background-color);
+    color: var(--text-color);
     text-align: center;
     padding-top: 10px;
     margin: 0 33%;
@@ -129,15 +146,14 @@ function exit() {
 }
 
 #close-btn {
-    color: #ffffff;
+    color: var(--copy-button-hover-color);
     padding: 0;
     margin-right: 7px;
     border: none;
 }
 
 #close-btn:hover {
-    color: #ff0000;
-    ;
+    color: var(--close-button-hover);
 }
 
 #close-icon {
@@ -162,7 +178,7 @@ button,
 }
 
 .option-btn {
-    color: #d1d1d1;
+    color: var(--option-button);
     padding: 0;
     width: 120px;
     height: 80px;
@@ -194,8 +210,12 @@ button,
     color: #009688;
 }
 
-#color-mode-btn:hover> :first-child {
+#color-mode-btn:hover>#sun-icon {
     color: #FFEB3B;
+}
+
+#color-mode-btn:hover>#moon-icon {
+    color: #7C3AED;
 }
 
 #help-btn:hover> :first-child {

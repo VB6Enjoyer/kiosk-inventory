@@ -119,7 +119,7 @@ onUnmounted(() => {
 
 function slideLeft() {
     if (dollarContainer.value) {
-        dollarContainer.value.style.transform = 'translateX(-96.5%)';
+        dollarContainer.value.style.transform = 'translateX(-96.33%)';
         dollarContainer.value.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
         isHidden.value = true;
     }
@@ -206,7 +206,7 @@ function slideRight() {
     position: absolute;
     left: 0;
     top: 0;
-    background-color: #333;
+    background-color: var(--exchange-background-color);
     border-left: none;
     border-right: none;
     height: 75px;
@@ -217,7 +217,7 @@ function slideRight() {
     display: flex;
     flex-direction: row;
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
-    border: 1px solid #acacac;
+    border: 1px solid var(--exchange-border-color);
     border-left: none;
     border-right: none;
 }
@@ -232,17 +232,21 @@ function slideRight() {
 #hide-button {
     width: 50px;
     height: 75px;
-    background-color: #f2f2f2;
-    color: #333;
+    background-color: var(--exchange-hide-button-color);
     padding: 0;
     padding-bottom: 1px;
     border: none;
     user-select: none;
     box-shadow: none;
+    transition: background-color 0.2s;
 }
 
 #hide-button:hover {
-    background-color: #dddddd;
+    background-color: var(--exchange-hide-button-hover-color);
+}
+
+#hide-button:hover>.hide-icon {
+    color: var(--exchange-hide-icon--hover-color);
 }
 
 #hide-button:focus {
@@ -250,17 +254,22 @@ function slideRight() {
 }
 
 #hide-button:disabled {
-    background-color: #777777;
-    color: #bbbbbb;
+    background-color: var(--exchange-hide-button-disabled-color);
 }
 
 #hide-button:disabled:hover {
-    background-color: #777777;
+    background-color: var(--exchange-hide-button-disabled-color);
+}
+
+#hide-button:disabled:hover>.hide-icon {
+    color: var(--exchange-hide-icon-color);
 }
 
 .hide-icon {
+    color: var(--exchange-hide-icon-color);
     width: 35px;
     height: 35px;
+    transition: color 0.2s;
 }
 
 .exchange-container {
@@ -283,31 +292,31 @@ function slideRight() {
 }
 
 #oficial-container {
-    color: #85BB65;
+    color: var(--official-exchange-color);
 }
 
 #blue-container {
-    color: #2196F3
+    color: #2196f3
 }
 
 #bolsa-container {
-    color: #9C27B0;
+    color: #9c27b0;
 }
 
 #ccl-container {
-    color: #FF9800;
+    color: #ff9800;
 }
 
 #mayorista-container {
-    color: #607D8B;
+    color: var(--mayorista-exchange-color);
 }
 
 #cripto-container {
-    color: #00BCD4;
+    color: #00bcd4;
 }
 
 #tarjeta-container {
-    color: #F44336;
+    color: #f44336;
 }
 
 #real-container {
@@ -319,6 +328,6 @@ function slideRight() {
 }
 
 #uruguayo-container {
-    color: #77acdc;
+    color: var(--uruguayo-exchange-color);
 }
 </style>

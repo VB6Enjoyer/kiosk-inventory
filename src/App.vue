@@ -3,6 +3,7 @@ import { Product } from './interfaces/Product'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap';
 import { ref } from 'vue';
+import './style.css'
 
 // TODO Localize fonts so they work offline
 // TODO Implement a calculator?
