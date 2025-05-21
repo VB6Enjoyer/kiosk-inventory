@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, defineEmits, Ref, onMounted, watch } from 'vue';
+import { ref, computed, defineEmits, Ref, onMounted, watch, onUnmounted } from 'vue';
 import { Clipboard } from 'lucide-vue-next';
 import { AdvancedSearch } from '../interfaces/AdvancedSearch.ts';
 import { useFocusTrap } from '../utilities/focusTrap.ts';
+import { useCurrentlyOpenModalStore } from '../stores/openModal.ts';
 
 const name = ref<string>("");
 const exactName = ref<boolean>(false);
@@ -22,6 +23,8 @@ const currentSearch = ref<AdvancedSearch | undefined>(undefined);
 const modalRef = ref<HTMLElement | null>(null);
 
 useFocusTrap(modalRef);
+
+const currentlyOpenModalStore = useCurrentlyOpenModalStore();
 
 const numRefMap = { quantityMin, quantityMax, costMin, costMax };
 
@@ -68,6 +71,9 @@ const expiryDateMaxError = computed(() =>
 const emit = defineEmits(['close', 'advanced-search']);
 
 async function advancedSearch() {
+    if (!isFormValid.value) return;
+    console.log(isFormValid.value)
+
     // @ts-ignore
     const products = await window.api.loadProducts();
 
@@ -207,19 +213,15 @@ function preventNegative(event: Event, targetRef: Ref<number>) {
         value = '0';
     }
 
-    // If empty, set to '0'
-    if (value === '' || isNaN(Number(value))) {
-        value = '0';
-    }
-
+    // Allow empty value (do not force to '0')
     input.value = value;
-    targetRef.value = Number(value);
+
 }
 
 function preventInvalidKey(event: KeyboardEvent) {
-    // Allow: Backspace, Tab, Arrow keys, Delete, Home, End, etc.
+    // Allow: Enter, Backspace, Tab, Arrow keys, Delete, Home, End, etc.
     const allowedKeys = [
-        "Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", "Home", "End"
+        "Enter", "Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", "Home", "End"
     ];
     // Allow: period (for decimals), but only if not already present
     if (
@@ -244,6 +246,18 @@ function onNumInput(event: Event, field: string) {
     preventNegative(event, numRefMap[field]);
 }
 
+function handleArrowKeys(event: KeyboardEvent, targetRef: Ref<number>) {
+    if (event.key === "ArrowUp") {
+        event.preventDefault();
+        targetRef.value = (targetRef.value || 0) + 1;
+    } else if (event.key === "ArrowDown") {
+        event.preventDefault();
+        if (targetRef.value > 0) {
+            targetRef.value = targetRef.value - 1;
+        }
+    }
+}
+
 onMounted(() => {
     if (currentSearch) {
         // Load all saved search values
@@ -262,6 +276,25 @@ onMounted(() => {
         costMin.value = props.currentSearch?.costMin || 0;
         costMax.value = props.currentSearch?.costMax || 0;
     }
+
+    currentlyOpenModalStore.setModalOpen();
+
+    const handleKeydown = (event: KeyboardEvent) => {
+        if (event.key === "Escape") {
+            closeModal();
+        }
+
+        if (event.key === "Enter") {
+
+            advancedSearch();
+        }
+    };
+    window.addEventListener("keydown", handleKeydown);
+
+    onUnmounted(() => {
+        window.removeEventListener("keydown", handleKeydown);
+        currentlyOpenModalStore.setModalClosed();
+    });
 });
 
 // Quantity Min/Max Sync
@@ -293,7 +326,7 @@ watch(costMax, (newMax) => {
     <div id="modal-container" class="modal-sm" ref="modalRef">
         <h2 id="form-header">Búsqueda avanzada</h2>
         <div id="form-container">
-            <form id="product-form" @submit.prevent="advancedSearch">
+            <form id="product-form" @submit="advancedSearch">
                 <div class="row">
                     <div class="form-group">
                         <label id="product-name-label" for="product-name-input" class="text-label">Nombre</label>
@@ -330,13 +363,13 @@ watch(costMax, (newMax) => {
                             <input type="number" id="product-quantity-min-input"
                                 class="text-input form-control small-input" title="Cantidad mínima" placeholder="2"
                                 min="0" v-model.number="quantityMin" @input="event => onNumInput(event, 'quantityMin')"
-                                @keydown="preventInvalidKey">
+                                @keydown="preventInvalidKey; handleArrowKeys">
                             <span class="hyphen">-</span>
                             <input type="number" id="product-quantity-max-input"
                                 class="text-input form-control small-input" title="Cantidad máxima" placeholder="15"
                                 min="0" v-model.number="quantityMax" @input="event => onNumInput(event, 'quantityMax')"
-                                @keydown="preventInvalidKey">
-                            <button class="btn copy-btn" title="Copiar valor mínimo al valor máximo"
+                                @keydown="preventInvalidKey; handleArrowKeys">
+                            <button type="button" class="btn copy-btn" title="Copiar valor mínimo al valor máximo"
                                 @click="copyValue($event, 'quantity')">
                                 <Clipboard />
                             </button>
@@ -358,7 +391,7 @@ watch(costMax, (newMax) => {
                                 class="text-input form-control small-input" title="Fecha de compra máxima"
                                 v-model="purchaseDateMax" :disabled="unknownPurchaseDate"
                                 :class="{ 'input-error': purchaseDateMaxError }">
-                            <button class="btn copy-btn" title="Copiar fecha mínima a fecha máxima"
+                            <button type="button" class="btn copy-btn" title="Copiar fecha mínima a fecha máxima"
                                 @click="copyValue($event, 'purchaseDate')" :disabled="unknownPurchaseDate">
                                 <Clipboard />
                             </button>
@@ -386,7 +419,7 @@ watch(costMax, (newMax) => {
                             <input type="date" id="product-expiry-max-input" class="text-input form-control small-input"
                                 title="Fecha de vencimiento máxima" v-model="expiryDateMax" :disabled="noExpiry"
                                 :class="{ 'input-error': expiryDateMaxError }">
-                            <button class="btn copy-btn" title="Copiar fecha mínima a fecha máxima"
+                            <button type="button" class="btn copy-btn" title="Copiar fecha mínima a fecha máxima"
                                 @click="copyValue($event, 'expiryDate')" :disabled="noExpiry">
                                 <Clipboard />
                             </button>
@@ -406,12 +439,14 @@ watch(costMax, (newMax) => {
                         <div class="range-group range-group-number">
                             <input type="number" id="product-cost-min-input" class="text-input form-control small-input"
                                 title="Costo mínimo en ARS" placeholder="700" min="0" v-model.number="costMin"
-                                @input="event => onNumInput(event, 'costMin')" @keydown="preventInvalidKey">
+                                @input="event => onNumInput(event, 'costMin')"
+                                @keydown="preventInvalidKey; handleArrowKeys">
                             <span class="hyphen">-</span>
                             <input type="number" id="product-cost-max-input" class="text-input form-control small-input"
                                 title="Costo máximo en ARS" placeholder="1800" min="0" v-model.number="costMax"
-                                @input="event => onNumInput(event, 'costMax')" @keydown="preventInvalidKey">
-                            <button class="btn copy-btn" title="Copiar valor mínimo al valor máximo"
+                                @input="event => onNumInput(event, 'costMax')"
+                                @keydown="preventInvalidKey; handleArrowKeys">
+                            <button type="button" class="btn copy-btn" title="Copiar valor mínimo al valor máximo"
                                 @click="copyValue($event, 'cost')">
                                 <Clipboard />
                             </button>

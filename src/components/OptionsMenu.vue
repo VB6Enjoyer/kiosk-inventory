@@ -1,12 +1,20 @@
 <script setup lang="ts">
-import { defineEmits, ref } from 'vue';
-import { Calculator, FileSpreadsheet, FileText, FileUp, BatteryCharging, Sun, Moon, CircleHelp, LogOut } from 'lucide-vue-next';
+import { defineEmits, onMounted, onUnmounted, ref } from 'vue';
+import { Calculator, FileSpreadsheet, FileText, FileUp, BatteryCharging, BatteryFull, Sun, Moon, CircleHelp, LogOut } from 'lucide-vue-next';
 import { X } from 'lucide-vue-next';
 import { electronAPI } from '../utilities/electronAPI'
 import { useFocusTrap } from '../utilities/focusTrap';
+import { useEcoModeStore } from '../stores/ecoMode';
+import { useToast } from 'vue-toastification';
+import { useCurrentlyOpenModalStore } from '../stores/openModal';
 
 const currentTheme = ref<string>("dark");
 const modalRef = ref<HTMLElement | null>(null);
+const ecoMode = ref<boolean>(false);
+
+const toast = useToast();
+const ecoModeStore = useEcoModeStore();
+const currentlyOpenModalStore = useCurrentlyOpenModalStore();
 
 useFocusTrap(modalRef);
 
@@ -34,14 +42,37 @@ function importExcel() {
 function switchTheme() {
     currentTheme.value = localStorage.getItem('theme') || "";
     if (currentTheme.value == 'dark') {
-        document.documentElement.className = "light-theme";
+        document.documentElement.classList.add("light-theme");
+        document.documentElement.classList.remove("dark-theme");
         localStorage.setItem('theme', "light");
         currentTheme.value = "light";
+        toast.info("Modo claro activado");
     } else {
-        document.documentElement.className = "dark-theme";
+        document.documentElement.classList.add("dark-theme");
+        document.documentElement.classList.remove("light-theme");
         localStorage.setItem('theme', "dark");
         currentTheme.value = "dark";
+        toast.info("Modo oscuro activado");
     }
+}
+
+function toggleEcoMode() {
+    const storedValue = localStorage.getItem('eco');
+    ecoMode.value = storedValue == "true" ? false : true;
+    ecoModeStore.setEcoMode(ecoMode.value);
+    localStorage.setItem('eco', ecoMode.value.toString());
+
+    if (ecoMode.value) {
+        document.documentElement.classList.add("eco-mode");
+        toast.info("Modo eco activado");
+    } else {
+        document.documentElement.classList.remove("eco-mode");
+        toast.info("Modo eco desactivado");
+    }
+}
+
+function getHelp() {
+
 }
 
 function closeMenu() {
@@ -51,6 +82,59 @@ function closeMenu() {
 function exit() {
     electronAPI.closeApp();
 }
+
+function handleKeydown(event: KeyboardEvent) {
+    // Only trigger on no modifier keys (to avoid conflicts)
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
+
+    // Use lower case for comparison
+    const key = event.key.toLowerCase();
+
+    switch (key) {
+        case 'c':
+            event.preventDefault();
+            openCalculator();
+            break;
+        case 'e':
+            event.preventDefault();
+            exportExcel();
+            break;
+        case 'p':
+            event.preventDefault();
+            exportPDF();
+            break;
+        case 'i':
+            event.preventDefault();
+            importExcel();
+            break;
+        case 'm':
+            event.preventDefault();
+            toggleEcoMode();
+            break;
+        case 'o':
+            event.preventDefault();
+            switchTheme();
+            break;
+        case 'a':
+            event.preventDefault();
+            getHelp();
+            break;
+        case 'escape':
+            closeMenu();
+            break;
+    }
+}
+
+onMounted(() => {
+    currentlyOpenModalStore.setModalOpen();
+
+    window.addEventListener("keydown", handleKeydown);
+});
+
+onUnmounted(() => {
+    window.removeEventListener("keydown", handleKeydown);
+    currentlyOpenModalStore.setModalClosed();
+});
 </script>
 
 <template>
@@ -67,41 +151,43 @@ function exit() {
             <button id="calculator-btn" class="btn option-btn" title="Abrir calculadora"
                 @click.prevent="openCalculator">
                 <Calculator id="calculator-icon" class="icon" />
-                <p class="btn-text">Calculadora</p>
+                <p class="btn-text"><u>C</u>alculadora</p>
             </button>
 
             <button id="excel-btn" class="btn option-btn" title="Exportar a hoja de cálculo de Excel"
                 @click.prevent="exportExcel">
                 <FileSpreadsheet id="excel-icon" class="icon" />
-                <p class="btn-text">Exportar a Excel</p>
+                <p class="btn-text">Exportar a <u>E</u>xcel</p>
             </button>
 
             <button id="pdf-btn" class="btn option-btn" title="Exportar a PDF para imprimir" @click.prevent="exportPDF">
                 <FileText id="pdf-icon" class="icon" />
-                <p class="btn-text">Exportar a PDF</p>
+                <p class="btn-text">Exportar a <u>P</u>DF</p>
             </button>
 
             <button id="import-btn" class="btn option-btn" title="Importar hoja de cálculo de Excel"
                 @click.prevent="importExcel">
                 <FileUp id="import-icon" class="icon" />
-                <p class="btn-text">Importar Excel</p>
+                <p class="btn-text"><u>I</u>mportar Excel</p>
             </button>
 
-            <button id="battery-btn" class="btn option-btn" title="Modo de ahorro de batería">
-                <BatteryCharging id="battery-icon" class="icon" />
-                <p class="btn-text">Modo Eco</p>
+            <button id="battery-btn" class="btn option-btn" title="Modo de ahorro de batería"
+                @click.prevent="toggleEcoMode">
+                <BatteryCharging id="battery-charging-icon" class="eco-mode-icon icon" v-if="!ecoMode" />
+                <BatteryFull id="battery-full-icon" class="eco-mode-icon icon" v-if="ecoMode" />
+                <p class="btn-text"><u>M</u>odo{{ ecoMode ? " Normal" : " Eco" }}</p>
             </button>
 
             <button id="color-mode-btn" class="btn option-btn" title="Cambiar esquema de colores"
                 @click.prevent="switchTheme">
                 <Sun id="sun-icon" class="color-mode-icon icon" v-if="currentTheme == 'dark'" />
                 <Moon id="moon-icon" class="color-mode-icon icon" v-if="currentTheme == 'light'" />
-                <p class="btn-text">{{ currentTheme == 'dark' ? "Modo Claro" : "Modo Oscuro" }}</p>
+                <p class="btn-text">Modo{{ currentTheme == 'dark' ? " Clar" : " Oscur" }}<u>o</u></p>
             </button>
 
             <button id="help-btn" class="btn option-btn" title="Abrir documento de ayuda">
                 <CircleHelp id="help-icon" class="icon" />
-                <p class="btn-text">Ayuda</p>
+                <p class="btn-text"><u>A</u>yuda</p>
             </button>
 
             <button id="exit-btn" class="btn option-btn" title="Cerrar el programa" @click.prevent="exit">

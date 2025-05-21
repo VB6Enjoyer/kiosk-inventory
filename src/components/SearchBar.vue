@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { ref, defineProps, watch } from 'vue';
+import { ref, defineProps, watch, onMounted, onUnmounted } from 'vue';
 import { Search, X } from 'lucide-vue-next';
+import { useCurrentlyOpenModalStore } from '../stores/openModal';
 
 const searchValue = ref<string>("");
 const isModalOpen = ref<boolean>(false);
+
+const currentlyOpenModalStore = useCurrentlyOpenModalStore();
 
 const emit = defineEmits(['search', 'open-search-modal']);
 
@@ -27,6 +30,47 @@ function openSearchModal() {
     isModalOpen.value = true;
     emit('open-search-modal', isModalOpen.value);
 }
+
+function handleGlobalKeydown(event: KeyboardEvent) {
+    if (currentlyOpenModalStore.isModalOpen) return;
+    // Ignore if user is typing in an input, textarea, or contenteditable
+    const tag = (event.target as HTMLElement).tagName;
+    const isEditable = (event.target as HTMLElement).isContentEditable;
+    if (
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        isEditable
+    ) {
+        return;
+    }
+
+    // Q: Focus search bar
+    if (event.key === 'q' || event.key === 'Q') {
+        const input = document.getElementById("search-input") as HTMLInputElement | null;
+        if (input) {
+            input.focus();
+            event.preventDefault();
+        }
+    }
+    // X: Clear search
+    else if (event.key === 'x' || event.key === 'X') {
+        clearSearch();
+        event.preventDefault();
+    }
+    // B: Open advanced search modal
+    else if (event.key === 'b' || event.key === 'B') {
+        openSearchModal();
+        event.preventDefault();
+    }
+}
+
+onMounted(() => {
+    window.addEventListener('keydown', handleGlobalKeydown);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('keydown', handleGlobalKeydown);
+});
 
 watch(
     () => props.isAdvancedSearching,
@@ -97,6 +141,7 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 #cancel-icon {
+    color: var(--copy-button-hover-color);
     transition: color 0.25s;
 }
 

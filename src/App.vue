@@ -5,14 +5,6 @@ import 'bootstrap';
 import { ref } from 'vue';
 import './style.css'
 
-// TODO Localize fonts so they work offline
-// TODO Implement a calculator?
-// TODO Implement a dark/white mode button (check the DarkTheme electron option)
-// TODO Implement a battery-saving mode
-// TODO Implement an exporter to Excel
-// TODO Add CSS animations and the capacity to turn them off if necessary
-// TODO Add keyboard shortcuts for different functions (esc to close modals and undo searches, for instance)
-
 const isMenuOpen = ref<boolean>(false);
 
 export default {

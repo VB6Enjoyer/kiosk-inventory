@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, reactive, defineEmits, watch, Ref } from 'vue';
+import { ref, computed, reactive, defineEmits, watch, Ref, onMounted, onUnmounted } from 'vue';
 import type { Product } from "../interfaces/Product.ts"
 import { useFocusTrap } from '../utilities/focusTrap.ts';
+import { useCurrentlyOpenModalStore } from '../stores/openModal.ts';
 
 const name = ref<string>("");
 const description = ref<string>("");
@@ -11,6 +12,8 @@ const unknownPurchaseDate = ref<boolean>(false);
 const expiryDate = ref<Date | String>(new Date());
 const noExpiry = ref<boolean>(false);
 const cost = ref<number>(0);
+
+const currentlyOpenModalStore = useCurrentlyOpenModalStore();
 
 const modalRef = ref<HTMLElement | null>(null);
 useFocusTrap(modalRef);
@@ -41,6 +44,8 @@ watch(quantity, (newValue) => {
 const emit = defineEmits(['close', 'add-product']);
 
 async function addProduct() {
+    if (!isFormValid.value) return;
+
     // Final validation check before submission
     if (name.value.trim() === "") {
         errors.name = "El nombre es requerido";
@@ -171,6 +176,39 @@ function onQuantityInput(event: Event) {
 function onCostInput(event: Event) {
     preventNegative(event, cost);
 }
+
+function handleArrowKeys(event: KeyboardEvent, targetRef: Ref<number>) {
+    if (event.key === "ArrowUp") {
+        event.preventDefault();
+        targetRef.value = (targetRef.value || 0) + 1;
+    } else if (event.key === "ArrowDown") {
+        event.preventDefault();
+        if (targetRef.value > 0) {
+            targetRef.value = targetRef.value - 1;
+        }
+    }
+}
+
+onMounted(() => {
+    currentlyOpenModalStore.setModalOpen();
+
+    const handleKeydown = (event: KeyboardEvent) => {
+        if (event.key === "Escape") {
+            closeModal();
+        }
+
+        if (event.key === "Enter") {
+            // Only submit if the modal is open and focused
+            addProduct();
+        }
+    };
+    window.addEventListener("keydown", handleKeydown);
+
+    onUnmounted(() => {
+        window.removeEventListener("keydown", handleKeydown);
+        currentlyOpenModalStore.setModalClosed();
+    });
+});
 </script>
 
 <template>
@@ -211,8 +249,8 @@ function onCostInput(event: Event) {
                         </label>
                         <input type="number" id="product-quantity-input" class="text-input form-control"
                             :class="{ 'input-error': errors.quantity }" title="Unidades del producto" placeholder="6"
-                            min="0" v-model.number="quantity" @input="onQuantityInput" @keydown="preventInvalidKey"
-                            required>
+                            min="0" v-model.number="quantity" @input="onQuantityInput"
+                            @keydown="preventInvalidKey; handleArrowKeys" required>
                         <div class="error-container">
                             <span v-if="errors.quantity" class="error-message">{{ errors.quantity }}</span>
                         </div>
@@ -262,7 +300,7 @@ function onCostInput(event: Event) {
                         <label id="product-cost-label" for="product-cost-input" class="text-label">Costo</label>
                         <input type="number" id="product-cost-input" class="text-input form-control"
                             title="Costo del producto en ARS" placeholder="1500" min="0" v-model.number="cost"
-                            @input="onCostInput" @keydown="preventInvalidKey">
+                            @input="onCostInput" @keydown="preventInvalidKey; handleArrowKeys">
                         <div class="error-container"></div>
                     </div>
                 </div>

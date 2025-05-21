@@ -74,7 +74,7 @@
   --options-modal-button: #333333;
   --options-modal-icon-hover-color: #000000;
   --table-container-border-color: #5f5f5f;
-  --expired-product-color: #afafaf;
+  --expired-product-color: #aeaeae;
   --description-color: #484848;
   --table-text-input-background-color: #f2f2f2;
 }
@@ -106,6 +106,27 @@
   --expired-product-color: #505050;
   --description-color: #acacac;
   --table-text-input-background-color: #3a3a3a;
+}
+
+.eco-mode,
+.eco-mode *,
+.eco-mode *:hover,
+.eco.mode *:hover::before,
+.eco.mode *:hover::after,
+.eco-mode *:focus {
+  transition: none !important;
+  box-shadow: none !important;
+  animation: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  --confirmation-dialog-background-color: rgba(0, 0, 0, 0.75);
+}
+
+.eco-mode .option-btn:hover,
+.eco-mode .option-btn:hover>*,
+.eco-mode #close-btn:hover,
+.eco-mode #cancel-icon:hover {
+  color: inherit !important;
 }
 
 /* === Global styles using variables === */

@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref, defineProps, defineEmits } from 'vue';
+import { ref, defineProps, defineEmits, onMounted, onUnmounted } from 'vue';
 import { useFocusTrap } from '../utilities/focusTrap';
+import { useCurrentlyOpenModalStore } from '../stores/openModal';
 
+const currentlyOpenModalStore = useCurrentlyOpenModalStore();
 const modalRef = ref<HTMLElement | null>(null);
 useFocusTrap(modalRef);
 
@@ -87,6 +89,27 @@ function cleanupCharging() {
         chargingAnimationFrame = null;
     }
 }
+
+onMounted(() => {
+    currentlyOpenModalStore.setModalOpen();
+
+    const handleKeydown = (event: KeyboardEvent) => {
+        if (event.key === "Escape") {
+            cancel();
+        }
+
+        if (event.key === "Enter") {
+            // Only submit if the modal is open and focused
+            if (!props.isImporting) confirm();
+        }
+    };
+    window.addEventListener("keydown", handleKeydown);
+
+    onUnmounted(() => {
+        window.removeEventListener("keydown", handleKeydown);
+        currentlyOpenModalStore.setModalClosed();
+    });
+});
 </script>
 
 <template>

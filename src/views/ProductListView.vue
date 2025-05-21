@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import AddProductModal from '../components/AddProductModal.vue';
 import ConfirmationDialog from "../components/ConfirmationDialog.vue";
 import type { Product } from "../interfaces/Product.ts";
@@ -16,6 +16,8 @@ import { useToast } from 'vue-toastification';
 import { debounce } from 'lodash';
 import { exportToExcel, importFromExcel } from '../utilities/excelHandler.ts';
 import "../style.css"
+import { useEcoModeStore } from '../stores/ecoMode.ts';
+import { useCurrentlyOpenModalStore } from '../stores/openModal.ts';
 
 // All //@ts-ignore are to prevent a pesky error which ignores that "window" refers to the Electron window
 // TODO Do extensive testing and write down any bugs to fix
@@ -43,6 +45,7 @@ const isImporting = ref<boolean>(false);
 const importedProducts = ref<any[]>([]);
 const importedFailedCount = ref(0);
 const importConfirmationMessage = ref('');
+const debouncedSearch = ref<(query: string) => void>(() => { });
 
 let isSaving: boolean = false; // Flag to prevent multiple calls
 let isSearching: boolean = searchQuery.value.trim().length > 0;
@@ -50,8 +53,11 @@ let isAdvancedSearching: boolean = false;
 let filterSetting: number = 0; // 0 = no, 1 = two weeks to expiry, 2 = one week to expiry, 3 = expired
 let isFiltering: boolean = false;
 let sortSetting = 0; // 0 = default (sort by ID), 1 = A-Z/0-9, 2 = Z-A/9-0
+let keydownListener: ((event: KeyboardEvent) => void) | undefined;
 
 const toast = useToast();
+const ecoModeStore = useEcoModeStore();
+const currentlyOpenModalStore = useCurrentlyOpenModalStore();
 
 const sortFunctions = {
     id: (a: Product, b: Product) => a.id - b.id,
@@ -92,23 +98,6 @@ const sortFunctions = {
         : b.cost - a.cost,
 };
 
-const debouncedSearch = debounce((query: string) => {
-    const fixedQuery = query.toLowerCase().trim();
-    clearFilters();
-
-    if (!fixedQuery) {
-        loadProducts();
-    } else {
-        products.value = [...productsBackup.value.filter(product =>
-            product.name.toLowerCase().includes(fixedQuery) ||
-            product.description.toLowerCase().includes(fixedQuery))];
-        sortProducts(sortingType.value || "", true);
-    }
-
-    searchedProducts.value = [...products.value];
-}, 30); // This value could be changed if the app is running in a really slow computer for better performance
-// Load, delete and modify operations have delay when searching. Might want to modify the logic to change this if necessary
-
 function openAddProductModal() {
     isAddProductModalOpen.value = true;
 }
@@ -137,8 +126,27 @@ function search(query: string) {
     if (searchQuery.value != query) searchQuery.value = query;
     isSearching = searchQuery.value.trim().length > 0;
     isAdvancedSearching = false;
-    debouncedSearch(searchQuery.value);
+    debouncedSearch.value(searchQuery.value);
     if (query == "") advancedSearchBackup.value = undefined;
+}
+
+function setupDebouncedSearch() {
+    const interval = ecoModeStore.ecoMode ? 600 : 30; // Adjust as needed
+    debouncedSearch.value = debounce((query: string) => {
+        const fixedQuery = query.toLowerCase().trim();
+        clearFilters();
+
+        if (!fixedQuery) {
+            loadProducts();
+        } else {
+            products.value = [...productsBackup.value.filter(product =>
+                product.name.toLowerCase().includes(fixedQuery) ||
+                product.description.toLowerCase().includes(fixedQuery))];
+            sortProducts(sortingType.value || "", true);
+        }
+
+        searchedProducts.value = [...products.value];
+    }, interval);
 }
 
 function advancedSearch(search: AdvancedSearch) {
@@ -158,7 +166,7 @@ function advancedSearch(search: AdvancedSearch) {
             : filteredProducts = [...filteredProducts.filter(product => product.description.toLowerCase().includes(search.description.toLowerCase()))];
     }
 
-    if (search.quantityMin != 0 && search.quantityMax != 0) filteredProducts = [...filteredProducts.filter(product => product.quantity >= search.quantityMin && product.quantity <= search.quantityMax)];
+    if (search.quantityMin >= 0 && search.quantityMax != 0) filteredProducts = [...filteredProducts.filter(product => product.quantity >= search.quantityMin && product.quantity <= search.quantityMax)];
 
     if (search.purchaseDateMin && search.purchaseDateMax && !search.unknownPurchaseDate) {
         filteredProducts = [...filteredProducts.filter(product => {
@@ -190,7 +198,7 @@ function advancedSearch(search: AdvancedSearch) {
         })];
     }
 
-    if (search.costMin && search.costMax) filteredProducts = [...filteredProducts.filter(product => product.cost >= search.costMin && product.cost <= search.costMax)];
+    if (search.costMin >= 0 && search.costMax) filteredProducts = [...filteredProducts.filter(product => product.cost >= search.costMin && product.cost <= search.costMax)];
 
     products.value = [...filteredProducts];
     searchedProducts.value = [...products.value]
@@ -298,7 +306,7 @@ async function loadProducts(keepSort: boolean = false) {
     // @ts-ignore
     productsBackup.value = await window.api.loadProducts();
 
-    isSearching ? debouncedSearch(searchQuery.value) : products.value = [...productsBackup.value];
+    isSearching ? debouncedSearch.value(searchQuery.value) : products.value = [...productsBackup.value];
 
     sortProducts(sortingType.value || "", keepSort);
 }
@@ -430,6 +438,7 @@ function handleClickOutside(event: MouseEvent) {
         }
         document.removeEventListener('mousedown', handleClickOutside);
     }
+    currentlyOpenModalStore.setModalClosed();
 }
 
 function closeToExpiry(expiryDate: string): string {
@@ -706,11 +715,90 @@ function cancelImport() {
 onMounted(() => {
     loadProducts();
     localStorage.setItem('theme', "dark");
+    localStorage.setItem('eco', "false");
+    setupDebouncedSearch();
 
+    keydownListener = (event: KeyboardEvent) => {
+        // Prevent shortcuts if a modal is open
+        if (currentlyOpenModalStore.isModalOpen || editingField.value) return;
+
+        // Always use lower case for letter keys
+        const key = event.key.toLowerCase();
+
+        // Sorting shortcuts
+        if (key === "1") {
+            event.preventDefault();
+            sortProducts('name');
+            return;
+        }
+        if (key === "2") {
+            event.preventDefault();
+            sortProducts('quantity');
+            return;
+        }
+        if (key === "3") {
+            event.preventDefault();
+            sortProducts('purchaseDate');
+            return;
+        }
+        if (key === "4") {
+            event.preventDefault();
+            sortProducts('expiryDate');
+            return;
+        }
+        if (key === "5") {
+            event.preventDefault();
+            sortProducts('cost');
+            return;
+        }
+
+        // Open add product modal: +, a
+        // + is Shift + = on most keyboards
+        if (
+            (event.key === "+" || (event.key === "=" && event.shiftKey)) ||
+            key === "a"
+        ) {
+            event.preventDefault();
+            openAddProductModal();
+            return;
+        }
+
+        // Filter by expiry date
+        if (event.key === "F1") {
+            event.preventDefault();
+            filterProductsByExpiry('two-weeks');
+            return;
+        }
+        if (event.key === "F2") {
+            event.preventDefault();
+            filterProductsByExpiry('one-week');
+            return;
+        }
+        if (event.key === "F3") {
+            event.preventDefault();
+            filterProductsByExpiry('expired');
+            return;
+        }
+
+        // Open options menu with Escape (existing)
+        if (event.key === "Escape") {
+            openMenu();
+        }
+    };
+    window.addEventListener("keydown", keydownListener);
 });
 
 onBeforeUnmount(() => {
     document.removeEventListener('mousedown', handleClickOutside);
+
+    if (keydownListener) {
+        window.removeEventListener("keydown", keydownListener);
+        keydownListener = undefined;
+    }
+});
+
+watch(() => ecoModeStore.ecoMode, () => {
+    setupDebouncedSearch();
 });
 </script>
 
@@ -1011,7 +1099,7 @@ button {
     justify-content: center;
     align-items: center;
     backdrop-filter: blur(5px);
-    z-index: 1000;
+    z-index: 3;
 }
 
 #filter-button-container {
@@ -1020,7 +1108,6 @@ button {
 }
 
 .filter-btn {
-    color: white;
     margin: 0 10px;
 }
 
@@ -1030,26 +1117,29 @@ button {
 }
 
 #two-weeks-btn:hover {
+    color: #000000 !important;
     background-color: #d2b400;
     box-shadow: 0 0 2px 0 #d2b400;
 }
 
 #one-week-btn {
-    color: rgb(255, 255, 255);
+    color: #ffffff !important;
     background-color: #ff0000;
 }
 
 #one-week-btn:hover {
+    color: #ffffff !important;
     background-color: #af0000;
     box-shadow: 0 0 2px 0 #af0000;
 }
 
 #expired-btn {
-    color: rgb(255, 255, 255);
+    color: #ffffff;
     background-color: #505050;
 }
 
 #expired-btn:hover {
+    color: #ffffff !important;
     background-color: #404040;
     box-shadow: 0 0 2px 0 #404040;
 }
@@ -1126,6 +1216,10 @@ th {
 .expired-product {
     background-color: var(--expired-product-color);
     color: rgba(255, 0, 0, 0.8);
+}
+
+.expired-product>.actions {
+    color: #f2f2f2;
 }
 
 .strikethrough {

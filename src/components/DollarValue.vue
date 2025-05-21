@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 import { PanelLeftClose, PanelRightClose } from 'lucide-vue-next';
+import { useCurrentlyOpenModalStore } from '../stores/openModal';
 
 const oficial = ref(0);
 const blue = ref(0);
@@ -18,6 +19,9 @@ const dollarContainer = ref<HTMLElement | null>(null);
 const apiUnavailable = ref<boolean>(false);
 
 let intervalId: number | undefined;
+let keydownListener: ((event: KeyboardEvent) => void) | undefined;
+
+const currentlyOpenModalStore = useCurrentlyOpenModalStore();
 
 async function checkApiStatus() {
     try {
@@ -102,21 +106,6 @@ function formatCurrency(value: number): string {
         : '';
 }
 
-onMounted(() => {
-    checkApiStatus();
-    intervalId = window.setInterval(() => {
-        checkApiStatus();
-    }, 3600000); // Update every hour.
-    // Could possibly implement this interval only on weekdays between 10:00 and 16:00 since all values but crypto remain static outside of this timeframe
-});
-
-onUnmounted(() => {
-    if (intervalId !== undefined) {
-        clearInterval(intervalId);
-        intervalId = undefined;
-    }
-});
-
 function slideLeft() {
     if (dollarContainer.value) {
         dollarContainer.value.style.transform = 'translateX(-96.33%)';
@@ -132,6 +121,36 @@ function slideRight() {
         isHidden.value = false;
     }
 }
+
+onMounted(() => {
+    keydownListener = (event: KeyboardEvent) => {
+        if (currentlyOpenModalStore.isModalOpen) return;
+        if (event.key === "ArrowRight") {
+            slideRight();
+        } else if (event.key === "ArrowLeft") {
+            slideLeft();
+        }
+    };
+    window.addEventListener("keydown", keydownListener);
+
+    checkApiStatus();
+    intervalId = window.setInterval(() => {
+        checkApiStatus();
+    }, 3600000); // Update every hour.
+    // Could possibly implement this interval only on weekdays between 10:00 and 16:00 since all values but crypto remain static outside of this timeframe
+});
+
+onUnmounted(() => {
+    if (intervalId !== undefined) {
+        clearInterval(intervalId);
+        intervalId = undefined;
+    }
+
+    if (keydownListener) {
+        window.removeEventListener("keydown", keydownListener);
+        keydownListener = undefined;
+    }
+});
 </script>
 
 <template>
