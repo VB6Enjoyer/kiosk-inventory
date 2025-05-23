@@ -59,7 +59,7 @@
       "name": "Fantoche",
       "description": "Blanco",
       "quantity": 8,
-      "purchaseDate": "2025-02-12",
+      "purchaseDate": "2025-02-13",
       "expiryDate": "2025-07-17",
       "cost": 4500
     },
@@ -95,7 +95,7 @@
       "name": "Test",
       "description": "Test 2",
       "quantity": 4,
-      "purchaseDate": "2022-05-06",
+      "purchaseDate": "2022-05-07",
       "expiryDate": "2024-02-29",
       "cost": 0
     },
@@ -140,7 +140,7 @@
       "name": "test 5",
       "description": "",
       "quantity": 3,
-      "purchaseDate": "2025-05-03",
+      "purchaseDate": "2025-05-04",
       "expiryDate": "No expira",
       "cost": 0
     },
@@ -162,5 +162,6 @@
       "expiryDate": "No expira",
       "cost": 100
     }
-  ]
+  ],
+  "theme": "dark"
 }

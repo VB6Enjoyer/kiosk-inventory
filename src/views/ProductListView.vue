@@ -45,6 +45,7 @@ const isImporting = ref<boolean>(false);
 const importedProducts = ref<any[]>([]);
 const importedFailedCount = ref(0);
 const importConfirmationMessage = ref('');
+const theme = ref<string>("");
 const debouncedSearch = ref<(query: string) => void>(() => { });
 
 let isSaving: boolean = false; // Flag to prevent multiple calls
@@ -374,9 +375,10 @@ function editField(productId: number, currentValue: string, field: string) {
     editingProductId.value = productId;
     if (currentValue.length > 0) newProductValue.value = currentValue.trim();
     editingField.value = field;
+    currentlyOpenModalStore.setModalOpen();
     isSaving = false;
 
-    document.removeEventListener('mousedown', handleClickOutside); // Remove the listener to dela with secondary inputs
+    document.removeEventListener('mousedown', handleClickOutside); // Remove the listener to delay with secondary inputs
 
     setTimeout(() => {
         document.addEventListener('mousedown', handleClickOutside);
@@ -388,6 +390,7 @@ async function updateProduct(productId: number) {
     isSaving = true;
 
     document.removeEventListener('mousedown', handleClickOutside);
+    currentlyOpenModalStore.setModalClosed();
 
     const product = products.value.find(p => p.id === productId);
     if (product) {
@@ -429,16 +432,17 @@ function handleClickOutside(event: MouseEvent) {
     const inputElement = document.querySelector('.edit-input');
 
     if (inputElement && !inputElement.contains(event.target as Node)) {
+
         if (editingProductId.value !== null && newProductValue.value) {
             updateProduct(editingProductId.value);
         } else {
             loadProducts(true);
             editingProductId.value = null;
             editingField.value = null;
+            currentlyOpenModalStore.setModalClosed();
         }
         document.removeEventListener('mousedown', handleClickOutside);
     }
-    currentlyOpenModalStore.setModalClosed();
 }
 
 function closeToExpiry(expiryDate: string): string {
@@ -712,11 +716,39 @@ function cancelImport() {
     importedFailedCount.value = 0;
 }
 
+async function loadTheme() {
+    //@ts-ignore
+    theme.value = await window.api.getTheme();
+    localStorage.setItem('theme', theme.value);
+    document.documentElement.classList.add(`${theme.value}-theme`);
+}
+
+async function changeTheme(newTheme: string) {
+    //@ts-ignore
+    await window.api.changeTheme(newTheme);
+
+    if (newTheme == 'light') {
+        document.documentElement.classList.add("light-theme");
+        document.documentElement.classList.remove("dark-theme");
+    } else {
+        document.documentElement.classList.add("dark-theme");
+        document.documentElement.classList.remove("light-theme");
+    }
+
+    theme.value = newTheme;
+    localStorage.setItem('theme', theme.value);
+}
+
+// Prevents shortcuts from working while searching  
+function switchSearchBarFocus(focus: boolean) {
+    focus ? currentlyOpenModalStore.setModalOpen() : currentlyOpenModalStore.setModalClosed();
+}
+
 onMounted(() => {
     loadProducts();
-    localStorage.setItem('theme', "dark");
-    localStorage.setItem('eco', "false");
+    loadTheme();
     setupDebouncedSearch();
+    localStorage.setItem('eco', "false");
 
     keydownListener = (event: KeyboardEvent) => {
         // Prevent shortcuts if a modal is open
@@ -812,8 +844,8 @@ watch(() => ecoModeStore.ecoMode, () => {
             </button>
 
             <div v-if="isMenuOpen" class="modal-overlay">
-                <OptionsMenu @close="closeMenu" @export-pdf="exportPDF" @export-excel="exportExcel"
-                    @import-excel="importExcel" />
+                <OptionsMenu :currentTheme="theme" @close="closeMenu" @export-pdf="exportPDF"
+                    @export-excel="exportExcel" @import-excel="importExcel" @change-theme="changeTheme" />
             </div>
         </div>
 
@@ -823,6 +855,7 @@ watch(() => ecoModeStore.ecoMode, () => {
             <div id="functions-container">
                 <div id="search-bar-container">
                     <SearchBar id="search-bar" @search="search" @openSearchModal='openSearchModal'
+                        @focus-change="switchSearchBarFocus" @focus-blur="switchSearchBarFocus"
                         :isAdvancedSearching="isAdvancedSearching" />
                 </div>
 
@@ -993,7 +1026,7 @@ watch(() => ecoModeStore.ecoMode, () => {
                                         @keydown="preventInvalidKey" />
 
                                     <span class="product-unit-cost"> (${{ formatUnitCost(product.cost, product.quantity)
-                                    }} c/u)</span>
+                                        }} c/u)</span>
                                 </td>
 
                                 <td class="actions">
@@ -1040,6 +1073,7 @@ watch(() => ecoModeStore.ecoMode, () => {
 
 #inventory-header {
     user-select: none;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
 }
 
 #functions-container {
@@ -1049,11 +1083,17 @@ watch(() => ecoModeStore.ecoMode, () => {
     justify-content: space-between;
     align-items: center;
     position: relative;
+    flex-wrap: wrap;
+    /* Allow wrapping on small screens */
+    gap: 10px;
+    /* Add spacing between wrapped items */
 }
 
 #product-list-container {
     margin-top: 20px;
     font-family: "Roboto", Helvetica, sans-serif;
+    height: calc(100vh - 75px);
+    /* Use viewport height */
 }
 
 #search-bar-container {
@@ -1157,6 +1197,8 @@ button {
     font-family: "Roboto", Helvetica, sans-serif;
     scrollbar-width: thin;
     scrollbar-color: var(--expired-product-color) var(--body-background-color);
+    flex: 1;
+    /* Allow table to grow and fill space */
 }
 
 .product-table {
@@ -1177,7 +1219,11 @@ thead {
     text-align: center;
     padding: 8px 7px 8px 7px;
     font-size: 18px;
-    z-index: 2;
+    font-size: clamp(0.8rem, 2vw, 1.125rem);
+    /* Responsive font size */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .product-table td {
@@ -1185,6 +1231,10 @@ thead {
     padding: 8px 7px 8px 7px;
     font-size: 18px;
     font-family: "Roboto", Helvetica, sans-serif;
+    font-size: clamp(0.8rem, 2vw, 1.125rem);
+    /* Responsive font size */
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 th {
@@ -1237,6 +1287,8 @@ th {
 .product-unit-cost {
     color: var(--description-color);
     font-size: 16px;
+    font-size: clamp(0.75rem, 1.5vw, 1rem);
+    /* Responsive font size */
 }
 
 .product-name {
@@ -1279,6 +1331,8 @@ th {
     height: 38px;
     max-height: 38px;
     max-width: 50%;
+    box-sizing: border-box;
+    /* Include padding in width calculation */
 }
 
 .edit-input[type="date"]::-webkit-calendar-picker-indicator {
@@ -1384,5 +1438,70 @@ th {
 
 .pdf-export #current-date {
     visibility: visible;
+}
+
+/* Added styles for small windows */
+@media (max-height: 600px) {
+    #product-list-container {
+        height: calc(100vh - 60px);
+    }
+
+    #inventory-header {
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+    }
+
+    #table-container {
+        max-height: calc(100vh - 120px);
+    }
+
+    .product-table th,
+    .product-table td {
+        padding: 4px 2px;
+    }
+}
+
+/* Added styles for very small screens */
+@media (max-width: 768px) {
+    .product-name {
+        width: 30%;
+    }
+
+    .product-quantity {
+        width: 15%;
+    }
+
+    .product-purchase-date,
+    .product-expiry-date {
+        width: 15%;
+    }
+
+    .product-cost {
+        width: 15%;
+    }
+
+    .actions {
+        width: 10%;
+    }
+
+    .edit-input {
+        min-width: 100%;
+        font-size: clamp(0.8rem, 2vw, 1.125rem);
+    }
+
+    .edit-input-date {
+        min-width: 110px;
+    }
+}
+
+/* Added styles for extra small screens */
+@media (max-width: 576px) {
+    .product-unit-cost {
+        display: none;
+    }
+
+    .product-table {
+        font-size: 0.8rem;
+    }
 }
 </style>

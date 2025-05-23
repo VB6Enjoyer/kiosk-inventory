@@ -13,11 +13,11 @@ const isDev = !app.isPackaged;
 
 // Create the file if it doesn't exist
 if (!fs.existsSync(dbPath)) {
-    fs.writeFileSync(dbPath, JSON.stringify({ products: [] }));
+    fs.writeFileSync(dbPath, JSON.stringify({ products: [], theme: 'dark' }));
 }
 
 const adapter = new JSONFile('db.json');
-const defaultData = { products: [] };
+const defaultData = { products: [], theme: 'dark' };
 const db = new Low(adapter, defaultData);
 
 let mainWindow;
@@ -130,6 +130,18 @@ ipcMain.handle('update-product', async (event, updatedProduct) => {
     return db.data.products;
 });
 
+ipcMain.handle('get-theme', async () => {
+    await db.read();
+    return db.data.theme;
+});
+
+ipcMain.handle('change-theme', async (event, theme) => {
+    await db.read();
+    db.data.theme = theme;
+    await db.write();
+    return db.data.theme;
+});
+
 ipcMain.handle('open-calculator', () => {
     createCalculatorWindow();
     return true;
@@ -148,7 +160,6 @@ ipcMain.handle('minimize-calculator', () => {
     }
     return true;
 });
-
 app.on('window-all-closed', function () {
     if (process.platform !== 'darwin') app.quit();
 });

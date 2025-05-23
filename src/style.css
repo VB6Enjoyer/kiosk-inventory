@@ -45,7 +45,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  overflow: hidden !important;
+  overflow: auto !important;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -130,6 +130,11 @@
 }
 
 /* === Global styles using variables === */
+html {
+  /* Added to ensure html takes full height */
+  height: 100%;
+}
+
 body {
   margin: 0;
   display: flex;
@@ -153,6 +158,8 @@ a:hover {
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
+  /* Added responsive font size */
+  font-size: clamp(2em, 5vw, 3.2em);
 }
 
 button {
@@ -176,30 +183,22 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-.card {
-  padding: 2em;
-}
-
 #app {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-
-  a:hover {
-    color: #747bff;
-  }
-
-  button {
-    background-color: #f9f9f9;
-  }
+  /* Modified to be responsive */
+  width: 100%;
+  box-sizing: border-box;
+  padding: clamp(1rem, 5vw, 2rem);
+  /* Added to handle overflow properly */
+  overflow-x: hidden;
+  overflow-y: auto;
+  /* Added to ensure app takes available height */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 @font-face {
@@ -250,4 +249,43 @@ button:focus-visible {
   font-weight: 400;
   src: url('assets/fonts/jetbrains-mono-v20-latin-regular.woff2') format('woff2');
   /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+
+  a:hover {
+    color: #747bff;
+  }
+
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+@media (max-height: 600px) {
+  body {
+    min-height: 100%;
+  }
+
+  #app {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+}
+
+.wrapper {
+  width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Added flex utilities for responsive layouts */
+.flex-container {
+  display: flex;
+  flex-wrap: wrap;
 }

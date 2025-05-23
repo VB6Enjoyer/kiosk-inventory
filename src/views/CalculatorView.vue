@@ -8,7 +8,7 @@ import Calculator from '../components/Calculator.vue';
   </div>
 </template>
 
-<style scoped>
+<style>
 .calculator-view {
   display: flex;
   position: absolute;
@@ -21,5 +21,11 @@ import Calculator from '../components/Calculator.vue';
   overflow: hidden !important;
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+
+@media (max-width: 768px) {
+  .calculator-view button {
+    width: 100%;
+  }
 }
 </style>

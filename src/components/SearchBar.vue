@@ -8,7 +8,7 @@ const isModalOpen = ref<boolean>(false);
 
 const currentlyOpenModalStore = useCurrentlyOpenModalStore();
 
-const emit = defineEmits(['search', 'open-search-modal']);
+const emit = defineEmits(['search', 'open-search-modal', 'focus-change']);
 
 const props = defineProps<{
     isAdvancedSearching: boolean
@@ -64,6 +64,14 @@ function handleGlobalKeydown(event: KeyboardEvent) {
     }
 }
 
+function handleFocus() {
+    emit('focus-change', true);
+}
+
+function handleBlur() {
+    emit('focus-change', false);
+}
+
 onMounted(() => {
     window.addEventListener('keydown', handleGlobalKeydown);
 });
@@ -87,7 +95,7 @@ watch(
 <template>
     <div id="search-container">
         <input type="search" id="search-input" title="Buscar productos por nombre y descripción" placeholder="Buscar"
-            autocomplete="name" @input="simpleSearch" />
+            autocomplete="name" @input="simpleSearch" @focus="handleFocus" @blur="handleBlur" />
 
         <Search v-if="searchValue.trim().length == 0 && !props.isAdvancedSearching" id="search-icon"
             class="search-bar-icon" />
@@ -112,6 +120,7 @@ watch(
 }
 
 #search-input {
+    width: 300px;
     font-size: 18px;
     align-items: center;
     padding: 7px 10px 7px 40px;
@@ -150,7 +159,6 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 .search-bar-icon {
-    z-index: 1;
     position: absolute;
     top: 22%;
     left: 10px;
@@ -159,7 +167,6 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 #advanced-search-btn {
-    z-index: 1;
     position: absolute;
     top: 0px;
     left: 307px;

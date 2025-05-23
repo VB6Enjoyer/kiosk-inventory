@@ -5,7 +5,8 @@ contextBridge.exposeInMainWorld('api', {
     loadProducts: () => ipcRenderer.invoke('load-products'),
     deleteProduct: (id) => ipcRenderer.invoke('delete-product', id),
     updateProduct: (updatedProduct) => ipcRenderer.invoke('update-product', updatedProduct),
-
+    getTheme: () => ipcRenderer.invoke('get-theme'),
+    changeTheme: (theme) => ipcRenderer.invoke('change-theme', theme)
 });
 
 contextBridge.exposeInMainWorld('electron', {

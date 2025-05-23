@@ -46,7 +46,7 @@ export default {
 
 <template>
   <div id="app">
-    <router-view id="view" />
+    <router-view id="view" class="wrapper" />
   </div>
 </template>
 
@@ -58,11 +58,21 @@ export default {
   margin-top: 0px;
   width: 100%;
   min-width: 92.5%;
-  height: 100%;
+  height: 100vh;
   min-height: 92.5%;
   overflow: visible !important;
   scrollbar-width: thin !important;
   -ms-overflow-style: thin !important;
+  display: flex;
+  /* Added flex display */
+  flex-direction: column;
+  /* Stack children vertically */
+  box-sizing: border-box;
+  /* Include padding in width calculation */
+}
+
+#app *::-webkit-scrollbar {
+  display: none;
 }
 
 .modal-overlay {
@@ -81,8 +91,11 @@ export default {
 
 input {
   padding: 8px;
-  width: 300px;
+  width: 100%;
+  max-width: 350px;
   margin-right: 10px;
+  box-sizing: border-box;
+  /* Include padding in width calculation */
 }
 
 button {
@@ -92,5 +105,38 @@ button {
 ul {
   list-style: none;
   padding: 0;
+}
+
+/* Added responsive media queries */
+@media (max-width: 768px) {
+  input {
+    max-width: 100%;
+    margin-right: 0;
+  }
+
+  button {
+    width: 25%;
+  }
+
+  #view .delete-btn {
+    width: initial;
+  }
+}
+
+/* Added styles for small windows */
+@media (max-height: 600px) {
+  #app {
+    height: 100%;
+  }
+
+  #view {
+    flex: 1;
+    /* Allow the view to grow and fill available space */
+    overflow: auto;
+    /* Add scrolling to the view if needed */
+    width: 100%;
+    /* Ensure the view takes full width */
+    height: 100vh;
+  }
 }
 </style>

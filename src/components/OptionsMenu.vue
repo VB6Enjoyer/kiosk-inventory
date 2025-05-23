@@ -8,9 +8,10 @@ import { useEcoModeStore } from '../stores/ecoMode';
 import { useToast } from 'vue-toastification';
 import { useCurrentlyOpenModalStore } from '../stores/openModal';
 
-const currentTheme = ref<string>("dark");
+//const currentTheme = ref<string>("");
 const modalRef = ref<HTMLElement | null>(null);
 const ecoMode = ref<boolean>(false);
+const theme = ref<string>("");
 
 const toast = useToast();
 const ecoModeStore = useEcoModeStore();
@@ -18,7 +19,11 @@ const currentlyOpenModalStore = useCurrentlyOpenModalStore();
 
 useFocusTrap(modalRef);
 
-const emit = defineEmits(['close', 'export-pdf', 'export-excel', 'import-excel']);
+const emit = defineEmits(['close', 'export-pdf', 'export-excel', 'import-excel', 'change-theme']);
+
+const props = defineProps<{
+    currentTheme: string
+}>();
 
 function openCalculator() {
     electronAPI.openCalculator();
@@ -40,20 +45,15 @@ function importExcel() {
 }
 
 function switchTheme() {
-    currentTheme.value = localStorage.getItem('theme') || "";
-    if (currentTheme.value == 'dark') {
-        document.documentElement.classList.add("light-theme");
-        document.documentElement.classList.remove("dark-theme");
-        localStorage.setItem('theme', "light");
-        currentTheme.value = "light";
-        toast.info("Modo claro activado");
+    if (theme.value == 'dark') { // If current theme is 'dark', switch to 'light'
+        theme.value = 'light';
+        toast.info("Modo claro activado.");
     } else {
-        document.documentElement.classList.add("dark-theme");
-        document.documentElement.classList.remove("light-theme");
-        localStorage.setItem('theme', "dark");
-        currentTheme.value = "dark";
-        toast.info("Modo oscuro activado");
+        theme.value = 'dark';
+        toast.info("Modo oscuro activado.");
     }
+
+    emit('change-theme', theme.value);
 }
 
 function toggleEcoMode() {
@@ -127,6 +127,7 @@ function handleKeydown(event: KeyboardEvent) {
 
 onMounted(() => {
     currentlyOpenModalStore.setModalOpen();
+    theme.value = props.currentTheme;
 
     window.addEventListener("keydown", handleKeydown);
 });
@@ -180,9 +181,9 @@ onUnmounted(() => {
 
             <button id="color-mode-btn" class="btn option-btn" title="Cambiar esquema de colores"
                 @click.prevent="switchTheme">
-                <Sun id="sun-icon" class="color-mode-icon icon" v-if="currentTheme == 'dark'" />
-                <Moon id="moon-icon" class="color-mode-icon icon" v-if="currentTheme == 'light'" />
-                <p class="btn-text">Modo{{ currentTheme == 'dark' ? " Clar" : " Oscur" }}<u>o</u></p>
+                <Sun id="sun-icon" class="color-mode-icon icon" v-if="theme == 'dark'" />
+                <Moon id="moon-icon" class="color-mode-icon icon" v-if="theme == 'light'" />
+                <p class="btn-text">Modo{{ theme == 'dark' ? " Clar" : " Oscur" }}<u>o</u></p>
             </button>
 
             <button id="help-btn" class="btn option-btn" title="Abrir documento de ayuda">

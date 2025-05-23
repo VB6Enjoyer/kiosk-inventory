@@ -125,6 +125,7 @@ function slideRight() {
 onMounted(() => {
     keydownListener = (event: KeyboardEvent) => {
         if (currentlyOpenModalStore.isModalOpen) return;
+
         if (event.key === "ArrowRight") {
             slideRight();
         } else if (event.key === "ArrowLeft") {
