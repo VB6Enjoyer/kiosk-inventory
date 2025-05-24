@@ -305,10 +305,12 @@ onMounted(() => {
                     </div>
                 </div>
 
-                <button type="button" id="close-button" class="form-button btn btn-danger"
-                    @click="closeModal">Cerrar</button>
-                <button type="submit" id="submit-button" class="form-button btn btn-primary"
-                    :disabled="!isFormValid">Guardar</button>
+                <div id="btn-container">
+                    <button type="button" id="close-button" class="form-button btn btn-danger"
+                        @click="closeModal">Cerrar</button>
+                    <button type="submit" id="submit-button" class="form-button btn btn-primary"
+                        :disabled="!isFormValid">Guardar</button>
+                </div>
             </form>
         </div>
     </div>
@@ -317,35 +319,49 @@ onMounted(() => {
 <style scoped>
 #modal-container {
     font-family: "Roboto", Helvetica, sans-serif;
-    font-size: 18px;
+    font-size: clamp(0.9rem, 2vw, 1.125rem);
+    /* Responsive font size */
     background-color: var(--modal-background-color);
     color: var(--text-color);
     text-align: center;
     padding-top: 10px;
     margin: 0 33%;
+    /*margin: 0 auto;*/
     border-radius: 5px;
+    width: 90%;
+    max-width: 700px;
+    /* Added max-width */
+    min-width: 320px;
+    /* Added min-width */
+    max-height: 90vh;
+    /* Added max-height */
+    box-sizing: border-box;
+    /* Include padding in width calculation */
 }
 
 #form-header {
     user-select: none;
+    /*font-size: clamp(1rem, 3vw, 1.5rem);*/
 }
 
 #form-container {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1em;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: clamp(0.5em, 2vw, 1em);
+    /* Responsive gap */
     justify-content: center;
     align-content: center;
-    align-items: center;
-    padding: 5px 25px 25px 25px;
+    align-items: start;
+    /* Changed from center to start */
+    padding: 5px clamp(15px, 5vw, 25px) 25px;
+    /* Responsive padding */
 }
 
 #product-form {
     display: contents;
 }
 
-.form-group,
-.form-button {
+.form-group {
     display: flex;
     flex-direction: column;
     grid-column: span 1;
@@ -382,13 +398,17 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     background-color: var(--text-input-background-color);
     color: var(--text-color);
     border: 1px solid var(--text-input-border-color);
-    padding: 5px 10px;
+    padding: clamp(4px, 1vw, 5px) clamp(8px, 2vw, 10px);
     border-radius: 4px;
     box-shadow: 0 0 5px var(--box-shadow-color);
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
     position: relative;
+    font-size: clamp(0.8rem, 2vw, 1rem);
+    /* Responsive input font size */
+    box-sizing: border-box;
+    /* Include padding in width calculation */
 }
 
 .text-input::placeholder {
@@ -399,6 +419,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     text-align: center;
     border: none;
     margin-top: 0;
+    padding: clamp(8px, 0vw, 12px) clamp(16px, 0vw, 24px);
+    /* Responsive button padding */
+    font-size: clamp(0.8rem, 2vw, 1rem);
+    /* Responsive button font size */
 }
 
 .input-error {
@@ -416,7 +440,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .error-message {
     color: var(--input-error-color);
-    font-size: 12px;
+    font-size: clamp(0.7rem, 1.5vw, 0.75rem);
+    /* Responsive error font size */
     user-select: none;
 }
 
@@ -431,7 +456,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .date-checkbox-label {
-    font-size: 16px;
+    font-size: clamp(0.75rem, 1.8vw, 1rem);
+    /* Responsive font size */
     display: flex;
     padding-top: 2px;
     width: 40%;
@@ -452,6 +478,25 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     white-space: nowrap;
     user-select: none;
     -webkit-user-drag: none;
+    font-size: clamp(0.75rem, 1.8vw, 1rem);
+    /* Responsive font size */
+}
+
+#btn-container {
+    display: flex;
+    gap: 18px;
+    margin: 0;
+    grid-column: 1 / -1;
+    /* Span all columns of the grid */
+}
+
+.form-button {
+    flex: 1 1 0;
+    /* Fill available space equally */
+    text-align: center;
+    margin-top: 0;
+    padding: clamp(8px, 0vw, 12px) clamp(16px, 0vw, 24px);
+    font-size: clamp(0.8rem, 2vw, 1rem);
 }
 
 #close-button,
@@ -465,5 +510,94 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 #submit-button:hover {
     box-shadow: 0 0 2px 0 var(--blue-button-hover);
+}
+
+/* Added responsive media queries */
+@media (max-width: 768px) {
+    #modal-container {
+        width: 95%;
+        margin: 0 auto;
+    }
+
+    #form-container {
+        grid-template-columns: 1fr;
+        /* Single column on mobile */
+        gap: 0.33em;
+        padding: 5px 15px 25px;
+    }
+
+    .form-group {
+        margin: 12px auto;
+    }
+
+    .text-input {
+        padding: 8px 12px;
+    }
+}
+
+/* Added styles for small windows */
+@media (max-height: 600px) {
+    #modal-container {
+        max-height: 95vh;
+    }
+
+    #form-header {
+        margin-bottom: 0.5rem;
+    }
+
+    .form-group {
+        margin: 8px 0;
+    }
+
+    .form-button {
+        padding: 6px 16px;
+    }
+
+    .error-container,
+    .date-checkbox-container {
+        min-height: 8px;
+    }
+}
+
+/* Added styles for very small screens */
+@media (max-width: 480px) {
+    #modal-container {
+        width: 98%;
+        padding-top: 5px;
+    }
+
+    #form-container {
+        padding: 5px 10px 20px;
+    }
+
+    .text-input {
+        padding: 6px 10px;
+    }
+
+    .form-button {
+        padding: 8px 12px;
+    }
+}
+
+/* Added styles for landscape orientation on small screens */
+@media (max-height: 500px) and (orientation: landscape) {
+    #modal-container {
+        max-height: 98vh;
+        padding-top: 2px;
+    }
+
+    #form-header {
+        font-size: 1.2rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .form-group {
+        margin: 5px 0;
+    }
+
+    .error-container,
+    .date-checkbox-container {
+        min-height: 6px;
+    }
 }
 </style>

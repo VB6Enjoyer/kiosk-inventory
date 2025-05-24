@@ -1026,7 +1026,7 @@ watch(() => ecoModeStore.ecoMode, () => {
                                         @keydown="preventInvalidKey" />
 
                                     <span class="product-unit-cost"> (${{ formatUnitCost(product.cost, product.quantity)
-                                        }} c/u)</span>
+                                    }} c/u)</span>
                                 </td>
 
                                 <td class="actions">
@@ -1090,7 +1090,7 @@ watch(() => ecoModeStore.ecoMode, () => {
 }
 
 #product-list-container {
-    margin-top: 20px;
+    margin-top: 15px;
     font-family: "Roboto", Helvetica, sans-serif;
     height: calc(100vh - 75px);
     /* Use viewport height */
@@ -1191,7 +1191,7 @@ button {
 
 #table-container {
     max-height: 78vh;
-    overflow-y: auto;
+    overflow-y: scroll;
     width: 100%;
     border: 1px ridge var(--table-container-border-color);
     font-family: "Roboto", Helvetica, sans-serif;

@@ -60,7 +60,7 @@ export default {
   min-width: 92.5%;
   height: 100vh;
   min-height: 92.5%;
-  overflow: visible !important;
+  overflow: hidden !important;
   scrollbar-width: thin !important;
   -ms-overflow-style: thin !important;
   display: flex;

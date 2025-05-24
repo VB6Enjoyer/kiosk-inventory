@@ -454,10 +454,12 @@ watch(costMax, (newMax) => {
                     </div>
                 </div>
 
-                <button type="button" id="close-button" class="form-button btn btn-danger"
-                    @click="closeModal">Cerrar</button>
-                <button type="submit" id="submit-button" class="form-button btn btn-primary"
-                    :disabled="!isFormValid">Buscar</button>
+                <div id="btn-container">
+                    <button type="button" id="close-button" class="form-button btn btn-danger"
+                        @click="closeModal">Cerrar</button>
+                    <button type="submit" id="submit-button" class="form-button btn btn-primary"
+                        :disabled="!isFormValid">Buscar</button>
+                </div>
             </form>
         </div>
     </div>
@@ -466,44 +468,52 @@ watch(costMax, (newMax) => {
 <style scoped>
 #modal-container {
     font-family: "Roboto", Helvetica, sans-serif;
-    font-size: 18px;
+    font-size: clamp(0.9rem, 2vw, 1.125rem);
+    /* Responsive font size */
     background-color: var(--modal-background-color);
     color: var(--text-color);
     text-align: center;
     padding-top: 10px;
     margin: 0 25%;
     border-radius: 5px;
-    width: 100%;
+    width: 90%;
+    min-width: 320px;
+    /* Added min-width */
+    max-height: 90vh;
+    /* Added max-height */
+    overflow-y: auto;
+    /* Added scrolling for small screens */
+    box-sizing: border-box;
+    /* Include padding in width calculation */
 }
 
 #form-header {
     user-select: none;
+
 }
 
 #form-container {
     display: grid;
-    grid-template-columns: repeat(2, 2fr);
-    gap: 2em;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: clamp(1em, 3vw, 2em);
+    /* Responsive gap */
     justify-content: center;
     align-content: center;
-    align-items: center;
-    padding: 5px 25px 25px 25px;
+    align-items: stretch;
+    /* Changed from center to start */
+    padding: 5px clamp(15px, 5vw, 0px) 25px;
+    /* Responsive padding */
 }
 
 #product-form {
     display: contents;
 }
 
-.form-group,
-.form-button {
+.form-group {
     display: flex;
     flex-direction: column;
     grid-column: span 1;
     text-align: left;
-    margin: 12px 0;
-}
-
-.form-group {
     margin: 20px 0;
 }
 
@@ -531,38 +541,66 @@ input[type="number"] {
     background-color: var(--text-input-background-color);
     color: var(--text-color);
     border: 1px solid var(--text-input-border-color);
-    padding: 5px 10px;
+    padding: clamp(4px, 1vw, 5px) clamp(8px, 2vw, 10px);
+    /* Responsive padding */
     border-radius: 4px;
     box-shadow: 0 0 5px var(--box-shadow-color);
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
     position: relative;
+    font-size: clamp(0.8rem, 2vw, 1rem);
+    /* Responsive input font size */
+    box-sizing: border-box;
+    /* Include padding in width calculation */
 }
 
 .text-input::placeholder {
     color: var(--input-focus-shadow);
 }
 
+#btn-container {
+    display: flex;
+    gap: clamp(2px, 3vw, 36px);
+    margin: 0;
+    grid-column: 1 / -1;
+    /* Span all columns of the grid */
+}
+
 .form-button {
+    flex: 1 1 0;
+    /* Fill available space equally */
     text-align: center;
-    border: none;
+    margin-top: 0;
+    padding: clamp(8px, 0vw, 12px) clamp(16px, 0vw, 24px);
+    font-size: clamp(0.8rem, 2vw, 1rem);
 }
 
 .range-group {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    width: 87.5%
+    width: 100%;
+    /* Changed from 87.5% to 100% */
+    flex-wrap: wrap;
+    /* Allow wrapping on small screens */
+    gap: 5px;
+    /* Add gap between elements */
 }
+
 
 .small-input {
     width: 42.5%;
     margin: 0;
+    min-width: 80px;
+    /* Added min-width */
 }
 
 .small-input[type="date"] {
     width: 37.5%;
+    /* Adjusted width */
+    min-width: 120px;
+    /* Added min-width */
 }
 
 .small-input[type="date"]::-webkit-calendar-picker-indicator {
@@ -588,10 +626,6 @@ input[type="number"] {
 .checkbox-label {
     width: 30%;
     vertical-align: middle;
-}
-
-.form-checkbox-label {
-    width: 20%;
 }
 
 .hyphen,
@@ -634,7 +668,8 @@ input[type="number"] {
 }
 
 .date-checkbox-label {
-    font-size: 16px;
+    font-size: clamp(0.75rem, 1.8vw, 1rem);
+    /* Responsive font size */
     display: flex;
     padding-top: 2px;
     width: 40%;
@@ -654,7 +689,8 @@ input[type="number"] {
     padding: 0;
     margin-top: 2px;
     margin-left: 4px;
-    font-size: 16px;
+    font-size: clamp(0.75rem, 1.8vw, 1rem);
+    /* Responsive font size */
     white-space: nowrap;
 }
 
@@ -675,5 +711,93 @@ input[type="number"] {
 
 #submit-button:hover {
     box-shadow: 0 0 2px 0 var(--blue-button-hover);
+}
+
+/* Added responsive media queries */
+@media (max-width: 768px) {
+    #modal-container {
+        width: 95%;
+        margin: 0 auto;
+    }
+
+    #form-container {
+        grid-template-columns: 1fr;
+        /* Single column on mobile */
+        gap: 0;
+        padding: 5px 15px 25px;
+    }
+
+    .range-group {
+        flex-direction: column;
+        /* Stack range inputs vertically */
+        gap: 10px;
+    }
+
+    .small-input,
+    .small-input[type="date"] {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .input-with-checkbox {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    #product-name-input,
+    #product-description-input {
+        width: 100%;
+    }
+
+    .checkbox-label,
+    .form-checkbox-label {
+        margin-top: 5px;
+    }
+
+    .hyphen,
+    .separation-letter {
+        display: none;
+    }
+
+    .copy-btn {
+        visibility: hidden;
+        height: 0;
+    }
+}
+
+/* Added styles for small windows */
+@media (max-height: 600px) {
+    #modal-container {
+        max-height: 95vh;
+        padding-top: 5px;
+    }
+
+    #form-header {
+        margin-bottom: 0.5rem;
+    }
+
+    .form-group {
+        margin: 10px 0;
+    }
+
+    .form-button {
+        padding: 6px 16px;
+    }
+}
+
+/* Added styles for very small screens */
+@media (max-width: 480px) {
+    #modal-container {
+        width: 98%;
+        padding-top: 5px;
+    }
+
+    #form-container {
+        padding: 5px 10px 20px;
+    }
+
+    .date-checkbox-label {
+        width: 100%;
+    }
 }
 </style>
