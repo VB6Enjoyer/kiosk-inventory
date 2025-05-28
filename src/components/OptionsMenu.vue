@@ -202,7 +202,8 @@ onUnmounted(() => {
 <style scoped>
 #modal-container {
     font-family: "Roboto", Helvetica, sans-serif;
-    font-size: 18px;
+    font-size: clamp(0.9rem, 2vw, 1.125rem);
+    /* Responsive font size */
     background-color: var(--modal-background-color);
     color: var(--text-color);
     text-align: center;
@@ -210,6 +211,8 @@ onUnmounted(() => {
     margin: 0 33%;
     width: 100%;
     border-radius: 5px;
+    box-sizing: border-box;
+    /* Include padding in width calculation */
 }
 
 #modal-top-section {
@@ -218,18 +221,24 @@ onUnmounted(() => {
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .spacer {
-    width: 42px;
+    width: clamp(32px, 8vw, 42px);
+    /* Responsive spacer width */
 }
 
 #options-header {
-    font-size: 36px;
+    font-size: clamp(1.5rem, 5vw, 2.25rem);
     flex: 1;
+    flex-shrink: 0;
     text-align: center;
     margin: 0;
     user-select: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #close-btn {
@@ -237,6 +246,8 @@ onUnmounted(() => {
     padding: 0;
     margin-right: 7px;
     border: none;
+    box-sizing: border-box;
+    flex-shrink: 0;
 }
 
 #close-btn:hover {
@@ -245,18 +256,21 @@ onUnmounted(() => {
 
 #close-icon {
     cursor: pointer;
-    vertical-align: middle;
     align-content: center;
-    width: 32px;
-    height: 32px;
+    width: clamp(24px, 6vw, 32px);
+    /* Responsive icon size */
+    height: clamp(24px, 6vw, 32px);
+    display: block;
+    margin: auto;
 }
 
 #options-menu {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    column-gap: 6em;
-    row-gap: 3em;
-    padding: 25px 50px 50px 50px;
+    column-gap: clamp(2em, 8vw, 6em);
+    row-gap: clamp(1.5em, 5vw, 3em);
+    padding: clamp(20px, 5vw, 25px) clamp(20px, 8vw, 50px) clamp(30px, 8vw, 50px);
+    justify-items: center;
 }
 
 button,
@@ -267,14 +281,23 @@ button,
 .option-btn {
     color: var(--option-button);
     padding: 0;
-    width: 120px;
-    height: 80px;
+    width: clamp(100px, 20vw, 120px);
+    height: clamp(70px, 15vw, 80px);
     border: none;
+    box-sizing: border-box;
 }
 
 .icon {
-    width: 66px;
-    height: 66px;
+    width: clamp(40px, 10vw, 66px);
+    /* Responsive icon size */
+    height: clamp(40px, 10vw, 66px);
+    margin-bottom: 4px;
+    /* Added margin between icon and text */
+}
+
+.btn-text {
+    font-size: clamp(0.9rem, 1.8vw, 1rem);
+    text-align: center;
 }
 
 #calculator-btn:hover> :first-child {
@@ -311,5 +334,145 @@ button,
 
 #exit-btn:hover> :first-child {
     color: #F44336;
+}
+
+@media (max-width: 768px) {
+    #modal-container {
+        width: 95%;
+        font-size: 0.9rem;
+    }
+
+    #options-menu {
+        column-gap: 1.5em;
+        row-gap: 1.5em;
+        padding: 20px 15px 20px;
+    }
+
+    .option-btn {
+        width: 100px;
+        height: 70px;
+    }
+
+    .icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    #close-btn {
+        width: 4vw;
+        margin-left: 5px;
+    }
+
+    #close-icon {
+        width: clamp(12px, 3vw, 24px);
+        height: clamp(12px, 3vw, 24px);
+    }
+
+    .btn-text {
+        font-size: 0.75rem;
+    }
+
+    #options-header {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-height: 600px) {
+    #modal-container {
+        max-height: 95vh;
+        padding-top: 5px;
+    }
+
+    #options-menu {
+        padding: 15px 20px 25px;
+        row-gap: 1em;
+    }
+
+    .option-btn {
+        height: 60px;
+        padding: 6px;
+    }
+
+    .icon {
+        width: 35px;
+        height: 35px;
+    }
+
+    .btn-text {
+        font-size: 0.7rem;
+    }
+
+    #options-header {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #modal-container {
+        width: 98%;
+        padding-top: 5px;
+    }
+
+    #options-menu {
+        grid-template-columns: 1fr;
+        /* Single column on very small screens */
+        padding: 15px 10px 25px;
+        row-gap: 1em;
+    }
+
+    .option-btn {
+        width: 90%;
+        max-width: 200px;
+        height: 60px;
+        flex-direction: row;
+        /* Horizontal layout on small screens */
+        justify-content: flex-start;
+        padding: 8px 12px;
+    }
+
+    .icon {
+        width: 32px;
+        height: 32px;
+        margin-bottom: 0;
+        margin-right: 12px;
+    }
+
+    .btn-text {
+        font-size: 0.8rem;
+        text-align: left;
+    }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+    #modal-container {
+        max-height: 98vh;
+        padding-top: 2px;
+    }
+
+    #options-menu {
+        grid-template-columns: repeat(4, 1fr);
+        /* Four columns in landscape */
+        padding: 10px 15px 20px;
+        row-gap: 0.5em;
+        column-gap: 1em;
+    }
+
+    .option-btn {
+        height: 50px;
+        padding: 4px;
+    }
+
+    .icon {
+        width: 28px;
+        height: 28px;
+    }
+
+    .btn-text {
+        font-size: 0.65rem;
+    }
+
+    #options-header {
+        font-size: 1.2rem;
+    }
 }
 </style>

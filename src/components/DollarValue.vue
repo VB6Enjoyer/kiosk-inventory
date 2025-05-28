@@ -156,7 +156,7 @@ onUnmounted(() => {
 
 <template>
     <div id="dollar-container" ref="dollarContainer">
-        <span id="hideable-container">
+        <span id="hidable-container">
             <div id="oficial-container" class="exchange-container" title="Dólar oficial">
                 <h2 id="oficial-header" class="exchange-title">Oficial</h2>
                 <h4 v-if="oficial > 0" class="exchange-value">${{ formatCurrency(oficial) }} </h4>
@@ -229,29 +229,42 @@ onUnmounted(() => {
     background-color: var(--exchange-background-color);
     border-left: none;
     border-right: none;
-    height: 75px;
+    height: clamp(60px, 12vw, 75px);
+    /* Responsive height */
     font-family: 'Nunito', Arial, Helvetica, sans-serif;
+    overflow: hidden;
 }
 
-#hideable-container {
+#hidable-container {
     display: flex;
     flex-direction: row;
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
     border: 1px solid var(--exchange-border-color);
     border-left: none;
     border-right: none;
+    overflow-x: auto;
+    /* Allow horizontal scrolling on small screens */
+    overflow-y: hidden;
+    scrollbar-width: none;
+}
+
+#hidable-container::-webkit-scrollbar {
+    display: none;
+    /* Hide scrollbar for webkit browsers */
 }
 
 #dollar-container,
 #hide-button {
-    border-top-right-radius: 40px;
-    border-bottom-right-radius: 40px;
+    border-top-right-radius: clamp(20px, 8vw, 40px);
+    border-bottom-right-radius: clamp(20px, 8vw, 40px);
     border-start-start-radius: 0px;
 }
 
 #hide-button {
-    width: 50px;
-    height: 75px;
+    width: clamp(40px, 8vw, 50px);
+    /* Responsive width */
+    height: clamp(60px, 12vw, 75px);
+    /* Responsive height */
     background-color: var(--exchange-hide-button-color);
     padding: 0;
     padding-bottom: 1px;
@@ -259,6 +272,8 @@ onUnmounted(() => {
     user-select: none;
     box-shadow: none;
     transition: background-color 0.2s;
+    flex-shrink: 0;
+    /* Prevent shrinking */
 }
 
 #hide-button:hover {
@@ -287,28 +302,35 @@ onUnmounted(() => {
 
 .hide-icon {
     color: var(--exchange-hide-icon-color);
-    width: 35px;
-    height: 35px;
+    width: clamp(25px, 6vw, 35px);
+    height: clamp(25px, 6vw, 35px);
     transition: color 0.2s;
 }
 
 .exchange-container {
-    padding: 0px 10px;
-    height: 77px;
+    padding: 0px clamp(8px, 2vw, 10px);
+    height: clamp(60px, 12vw, 77px);
     display: flex;
     flex-direction: column;
     justify-content: center;
+    flex-shrink: 0;
+    box-sizing: border-box;
 }
 
 .exchange-title {
-    font-size: 30px;
+    font-size: clamp(1rem, 3vw, 1.875rem);
+    /* Responsive font size */
     font-weight: 400;
     user-select: none;
 }
 
 .exchange-value {
-    font-size: 23px;
+    font-size: clamp(0.8rem, 2vw, 1.4375rem);
     font-weight: 500;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #oficial-container {
@@ -349,5 +371,119 @@ onUnmounted(() => {
 
 #uruguayo-container {
     color: var(--uruguayo-exchange-color);
+}
+
+
+@media (max-width: 1380px) {
+    #dollar-container {
+        max-width: 90vw;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: thin;
+    }
+}
+
+@media (max-width: 768px) {
+    #dollar-container {
+        height: 60px;
+    }
+
+    #hide-button {
+        width: 40px;
+        height: 60px;
+    }
+
+    .hide-icon {
+        width: 25px;
+        height: 25px;
+    }
+
+    .exchange-container {
+        padding: 0px 6px;
+        height: 62px;
+    }
+
+    .exchange-title {
+        font-size: 1rem;
+    }
+
+    .exchange-value {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-height: 600px) {
+    #dollar-container {
+        height: 50px;
+    }
+
+    #hide-button {
+        height: 50px;
+        width: 35px;
+    }
+
+    .hide-icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    .exchange-container {
+        height: 53px;
+        min-width: 70px;
+        padding: 0px;
+    }
+
+    .exchange-title {
+        font-size: 0.85rem;
+    }
+
+    .exchange-value {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .exchange-container {
+        min-width: 65px;
+        padding: 0px 2px;
+    }
+
+    .exchange-title {
+        font-size: 0.8rem;
+    }
+
+    .exchange-value {
+        font-size: 0.65rem;
+    }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+    #dollar-container {
+        height: 45px;
+    }
+
+    #hide-button {
+        height: 45px;
+        width: 32px;
+    }
+
+    .hide-icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    .exchange-container {
+        height: 48px;
+        min-width: 60px;
+        padding: 0px 2px;
+    }
+
+    .exchange-title {
+        font-size: 0.75rem;
+    }
+
+    .exchange-value {
+        font-size: 0.6rem;
+    }
 }
 </style>

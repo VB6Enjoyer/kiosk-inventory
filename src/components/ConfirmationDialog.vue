@@ -153,11 +153,13 @@ onMounted(() => {
     justify-content: center;
     align-items: center;
     font-family: "Roboto", Helvetica, sans-serif;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 .dialog-content {
     background-color: var(--modal-background-color);
-    padding: 20px;
+    padding: clamp(15px, 4vw, 20px);
     padding-top: 0;
     margin-top: 0;
     border-radius: 5px;
@@ -165,27 +167,47 @@ onMounted(() => {
     user-select: none;
     position: relative;
     /* Added for absolute positioning of close button */
+    width: 100%;
+    max-width: 500px;
+    min-width: 280px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-sizing: border-box;
 }
 
 #message-container {
     width: 100%;
-    margin-top: 25px;
-    /* Add margin to avoid overlap with close button */
+    margin-top: clamp(20px, 5vw, 25px);
+    /* Responsive margin */
+    padding: 0 10px;
+    /* Added padding for text */
+}
+
+#message-container p {
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    line-height: 1.4;
+    word-wrap: break-word;
 }
 
 .btn {
     margin: 0 10px;
     transition: box-shadow 0.33s, background-color 0.33s;
+    padding: clamp(8px, 2vw, 8px) clamp(12px, 3vw, 16px);
+    font-size: clamp(0.9rem, 2vw, 1rem);
+    min-width: 80px;
+    box-sizing: border-box;
 }
 
 .charging-btn {
     position: relative;
     overflow: hidden;
+    min-width: 100px;
 }
 
 .charging-label {
     position: relative;
     z-index: 2;
+    display: block;
 }
 
 .charging-bar {
@@ -197,5 +219,129 @@ onMounted(() => {
     z-index: 1;
     transition: none;
     pointer-events: none;
+}
+
+/* Button container for better layout */
+.dialog-content>div:last-child {
+    display: flex;
+    flex-wrap: wrap;
+    /* Allow wrapping on small screens */
+    justify-content: center;
+    gap: 5px;
+    /* Add gap between buttons */
+    margin-top: clamp(15px, 4vw, 20px);
+    /* Responsive top margin */
+}
+
+/* Added responsive media queries */
+@media (max-width: 768px) {
+    .confirmation-dialog {
+        padding: 15px;
+    }
+
+    .dialog-content {
+        padding: 15px;
+        max-width: 80%;
+    }
+
+    .btn {
+        margin: 5px;
+        min-width: 90px;
+    }
+
+    .charging-btn {
+        min-width: 110px;
+    }
+
+    #message-container {
+        margin-top: 15px;
+        padding: 0 5px;
+    }
+}
+
+@media (max-height: 600px) {
+    .dialog-content {
+        max-height: 95vh;
+        padding: 10px;
+    }
+
+    #message-container {
+        margin-top: 10px;
+    }
+
+    .btn {
+        padding: 8px 12px;
+    }
+
+    .dialog-content>div:last-child {
+        margin-top: 10px;
+    }
+}
+
+@media (max-height: 600px) {
+    .dialog-content {
+        max-height: 95vh;
+        padding: 10px;
+    }
+
+    #message-container {
+        margin-top: 10px;
+    }
+
+    .btn {
+        padding: 8px 12px;
+    }
+
+    .dialog-content>div:last-child {
+        margin-top: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .confirmation-dialog {
+        padding: 10px;
+    }
+
+    .dialog-content {
+        padding: 12px;
+        min-width: 260px;
+    }
+
+    .btn {
+        padding: 8px 10px;
+        font-size: 0.8rem;
+        min-width: 70px;
+    }
+
+    .charging-btn {
+        min-width: 90px;
+    }
+
+    .dialog-content>div:last-child {
+        flex-direction: column;
+        /* Stack buttons vertically on very small screens */
+        align-items: center;
+    }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+    .dialog-content {
+        max-height: 98vh;
+        padding: 8px;
+    }
+
+    #message-container {
+        margin-top: 8px;
+    }
+
+    .btn {
+        padding: 6px 10px;
+    }
+
+    .dialog-content>div:last-child {
+        margin-top: 8px;
+        flex-direction: row;
+        /* Keep horizontal layout in landscape */
+    }
 }
 </style>

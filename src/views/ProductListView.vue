@@ -1026,7 +1026,7 @@ watch(() => ecoModeStore.ecoMode, () => {
                                         @keydown="preventInvalidKey" />
 
                                     <span class="product-unit-cost"> (${{ formatUnitCost(product.cost, product.quantity)
-                                    }} c/u)</span>
+                                        }} c/u)</span>
                                 </td>
 
                                 <td class="actions">
@@ -1057,13 +1057,15 @@ watch(() => ecoModeStore.ecoMode, () => {
     color: var(--options-modal-button);
     border: none;
     position: absolute;
-    right: 5px;
-    top: 5px;
+    right: 16px;
+    top: 10px;
+    padding: 2px;
+    box-sizing: border-box;
 }
 
 #grip-icon {
-    width: 40px;
-    height: 40px;
+    width: clamp(35px, 6vw, 40px);
+    height: clamp(35px, 6vw, 40px);
     transition: color 0.2s;
 }
 
@@ -1073,7 +1075,7 @@ watch(() => ecoModeStore.ecoMode, () => {
 
 #inventory-header {
     user-select: none;
-    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    font-size: clamp(1rem, 4vw, 2.5rem);
 }
 
 #functions-container {
@@ -1084,20 +1086,17 @@ watch(() => ecoModeStore.ecoMode, () => {
     align-items: center;
     position: relative;
     flex-wrap: wrap;
-    /* Allow wrapping on small screens */
-    gap: 10px;
-    /* Add spacing between wrapped items */
 }
 
 #product-list-container {
-    margin-top: 15px;
+    margin-top: 13px;
     font-family: "Roboto", Helvetica, sans-serif;
     height: calc(100vh - 75px);
     /* Use viewport height */
 }
 
 #search-bar-container {
-    max-width: 30%;
+    max-width: 40%;
     flex-shrink: 0;
 }
 
@@ -1120,8 +1119,14 @@ button {
 #open-modal-btn {
     position: absolute;
     left: 50%;
-    height: 100%;
+    height: auto;
     transform: translateX(-50%);
+    width: clamp(90px, 15vw, 150px);
+    font-size: clamp(0.75rem, 1.33vw, 1rem);
+    padding: clamp(6px, 1.5vw, 8.5px) clamp(8px, 2vw, 10px) clamp(6px, 1.5vw, 8.5px);
+    text-wrap: nowrap;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
 }
 
 #open-modal-btn:hover {
@@ -1148,7 +1153,13 @@ button {
 }
 
 .filter-btn {
-    margin: 0 10px;
+    margin: 0 clamp(5px, 1vw, 10px);
+    padding: clamp(4px, 2vw, 6px) clamp(8px, 2vw, 12px);
+}
+
+.filter-btn>* {
+    width: clamp(16px, 2vw, 24px);
+    height: clamp(16px, 2vw, 24px);
 }
 
 #two-weeks-btn {
@@ -1447,8 +1458,9 @@ th {
     }
 
     #inventory-header {
-        margin-top: 0;
-        margin-bottom: 0.5rem;
+        margin-top: 30px;
+        margin-bottom: 5px;
+        font-size: 2em;
     }
 
     #table-container {
@@ -1463,6 +1475,23 @@ th {
 
 /* Added styles for very small screens */
 @media (max-width: 768px) {
+    #option-modal-btn {
+        width: 4vh;
+        padding: 0;
+    }
+
+    #grip-icon {
+        width: clamp(30px, 4vw, 35px);
+        height: clamp(30px, 4vw, 35px);
+    }
+
+    #open-modal-btn {
+        display: block;
+        min-width: 60px;
+        max-height: 35px;
+        font-size: clamp(0.66rem, 1vw, 1rem);
+    }
+
     .product-name {
         width: 30%;
     }
@@ -1496,6 +1525,16 @@ th {
 
 /* Added styles for extra small screens */
 @media (max-width: 576px) {
+    #option-modal-btn {
+        width: 3vh;
+        padding: 0;
+    }
+
+    #grip-icon {
+        width: clamp(27px, 4vw, 30px);
+        height: clamp(27px, 4vw, 30px);
+    }
+
     .product-unit-cost {
         display: none;
     }
