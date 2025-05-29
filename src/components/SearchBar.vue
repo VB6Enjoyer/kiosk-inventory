@@ -95,7 +95,7 @@ watch(
 <template>
     <div id="search-container">
         <div class="input-wrapper">
-            <input type="search" id="search-input" title="Buscar productos por nombre y descripción"
+            <input type="search" id="search-input" title="Buscar productos por nombre y descripción (Q)"
                 placeholder="Buscar" autocomplete="name" @input="simpleSearch" @focus="handleFocus"
                 @blur="handleBlur" />
 
@@ -103,13 +103,13 @@ watch(
                 class="search-bar-icon" />
 
             <button v-if="searchValue.trim().length > 0 || props.isAdvancedSearching" id="cancel-btn" class="btn"
-                title="Cancelar búsqueda" @click.prevent="clearSearch">
+                title="Cancelar búsqueda (X)" @click.prevent="clearSearch">
                 <X id="cancel-icon" class="search-bar-icon" />
             </button>
         </div>
 
-        <button type="button" id="advanced-search-btn" class="btn btn-primary" title="Abrir menú de búsqueda avanzada"
-            @click="openSearchModal">Búsqueda
+        <button type="button" id="advanced-search-btn" class="btn btn-primary"
+            title="Abrir menú de búsqueda avanzada (B)" @click="openSearchModal">Búsqueda
             avanzada</button>
     </div>
 </template>

@@ -456,8 +456,8 @@ watch(costMax, (newMax) => {
 
                 <div id="btn-container">
                     <button type="button" id="close-button" class="form-button btn btn-danger"
-                        @click="closeModal">Cerrar</button>
-                    <button type="submit" id="submit-button" class="form-button btn btn-primary"
+                        title="Cancelar y cerrar menú (Esc)" @click="closeModal">Cerrar</button>
+                    <button type="submit" id="submit-button" class="form-button btn btn-primary" title="Buscar (Enter)"
                         :disabled="!isFormValid">Buscar</button>
                 </div>
             </form>

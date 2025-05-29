@@ -307,9 +307,9 @@ onMounted(() => {
 
                 <div id="btn-container">
                     <button type="button" id="close-button" class="form-button btn btn-danger"
-                        @click="closeModal">Cerrar</button>
+                        title="Cancelar y cerrar menú (Esc)" @click="closeModal">Cerrar</button>
                     <button type="submit" id="submit-button" class="form-button btn btn-primary"
-                        :disabled="!isFormValid">Guardar</button>
+                        title="Añdir nuevo producto (Enter)" :disabled="!isFormValid">Guardar</button>
                 </div>
             </form>
         </div>

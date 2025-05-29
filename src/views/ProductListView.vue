@@ -839,7 +839,7 @@ watch(() => ecoModeStore.ecoMode, () => {
         <div id="upper-bar">
             <DollarValue />
 
-            <button id="option-modal-btn" class="btn" title="Menú de opciones" @click.prevent="openMenu()">
+            <button id="option-modal-btn" class="btn" title="Menú de opciones (Esc)" @click.prevent="openMenu()">
                 <Grip id="grip-icon" />
             </button>
 
@@ -864,7 +864,8 @@ watch(() => ecoModeStore.ecoMode, () => {
                         @advancedSearch="advancedSearch" />
                 </div>
 
-                <button @click="openAddProductModal" id="open-modal-btn" class="btn btn-success">Añadir
+                <button @click="openAddProductModal" id="open-modal-btn" class="btn btn-success"
+                    title="Abrir menú de creación de producto (+/A)">Añadir
                     producto</button>
 
                 <div v-if="isAddProductModalOpen" class="modal-overlay">
@@ -872,17 +873,19 @@ watch(() => ecoModeStore.ecoMode, () => {
                 </div>
 
                 <div id="filter-button-container">
-                    <button id="two-weeks-btn" class="btn filter-btn" title="Mostrar productos a vencer en 2 semanas"
+                    <button id="two-weeks-btn" class="btn filter-btn"
+                        title="Mostrar productos a vencer en 2 semanas (F1)"
                         @click="filterProductsByExpiry('two-weeks')">
                         <TriangleAlert />
                     </button>
 
-                    <button id="one-week-btn" class="btn filter-btn" title="Mostrar productos a vencer en una semana"
+                    <button id="one-week-btn" class="btn filter-btn"
+                        title="Mostrar productos a vencer en una semana (F2)"
                         @click="filterProductsByExpiry('one-week')">
                         <TriangleAlert />
                     </button>
 
-                    <button id="expired-btn" class="btn filter-btn" title="Mostrar productos vencidos"
+                    <button id="expired-btn" class="btn filter-btn" title="Mostrar productos vencidos (F3)"
                         @click="filterProductsByExpiry('expired')">
                         <Ban />
                     </button>
@@ -896,14 +899,15 @@ watch(() => ecoModeStore.ecoMode, () => {
                     <table class="product-table">
                         <thead>
                             <tr>
-                                <th id="name-header" title="Ordenar por nombre" @click="sortProducts('name')">
+                                <th id="name-header" title="Ordenar por nombre (1)" @click="sortProducts('name')">
                                     Nombre
                                     <ArrowDownAZ class="float-right"
                                         v-if="sortSetting === 1 && sortingType === 'name'" />
                                     <ArrowUpZA class="float-right" v-if="sortSetting === 2 && sortingType === 'name'" />
                                 </th>
 
-                                <th id="quantity-header" title="Ordenar por cantidad" @click="sortProducts('quantity')">
+                                <th id="quantity-header" title="Ordenar por cantidad (2)"
+                                    @click="sortProducts('quantity')">
                                     Cantidad
                                     <ArrowDown01 class="float-right"
                                         v-if="sortSetting === 1 && sortingType === 'quantity'" />
@@ -911,7 +915,7 @@ watch(() => ecoModeStore.ecoMode, () => {
                                         v-if="sortSetting === 2 && sortingType === 'quantity'" />
                                 </th>
 
-                                <th id="purchase-date-header" title="Ordenar por fecha de compra"
+                                <th id="purchase-date-header" title="Ordenar por fecha de compra (3)"
                                     @click="sortProducts('purchaseDate')">
                                     Fecha de compra
                                     <CalendarArrowDown class="float-right"
@@ -920,7 +924,7 @@ watch(() => ecoModeStore.ecoMode, () => {
                                         v-if="sortSetting === 2 && sortingType === 'purchaseDate'" />
                                 </th>
 
-                                <th id="expiry-date-header" title="Ordenar por fecha de vencimiento"
+                                <th id="expiry-date-header" title="Ordenar por fecha de vencimiento (4)"
                                     @click="sortProducts('expiryDate')">
                                     Fecha de vencimiento
                                     <CalendarArrowDown class="float-right"
@@ -929,7 +933,7 @@ watch(() => ecoModeStore.ecoMode, () => {
                                         v-if="sortSetting === 2 && sortingType === 'expiryDate'" />
                                 </th>
 
-                                <th id="cost-header" title="Ordenar por costo" @click="sortProducts('cost')">
+                                <th id="cost-header" title="Ordenar por costo (5)" @click="sortProducts('cost')">
                                     Costo
                                     <ArrowDown01 class="float-right"
                                         v-if="sortSetting === 1 && sortingType === 'cost'" />

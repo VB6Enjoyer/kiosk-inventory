@@ -120,12 +120,13 @@ onMounted(() => {
             </div>
             <div>
                 <!-- Cancel Button -->
-                <button id="cancel-button" class="btn btn-danger" @click.prevent="cancel">
+                <button id="cancel-button" class="btn btn-danger" @click.prevent="cancel"
+                    title="Cancelar y cerrar diálogo (Esc)">
                     Cancelar
                 </button>
 
                 <button id="replace-button" class="btn btn-primary charging-btn"
-                    title="Mantenga presionado para reemplazar todos los productos" v-if="isImporting"
+                    title="Reemplazar todos los productos (Mantener presionado)" v-if="isImporting"
                     @mousedown="startReplaceHold" @mouseup="cancelReplaceHold" @mouseleave="cancelReplaceHold">
                     <span class="charging-label">{{ redText }}</span>
                     <span class="charging-bar" v-if="isCharging" :style="{ width: chargingProgress + '%' }"></span>
@@ -133,6 +134,7 @@ onMounted(() => {
 
                 <!-- Confirm Button -->
                 <button id="confirm-button" class="btn" :class="isImporting ? 'btn-success' : 'btn-primary'"
+                    :title="isImporting ? 'Importar datos de la planilla (Enter)' : 'Eliminar producto (Enter)'"
                     @click.prevent="confirm">
                     {{ blueText }}
                 </button>

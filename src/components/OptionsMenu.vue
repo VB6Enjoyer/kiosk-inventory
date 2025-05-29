@@ -143,50 +143,51 @@ onUnmounted(() => {
         <div id="modal-top-section">
             <div class="spacer"></div>
             <h2 id="options-header">Opciones</h2>
-            <button id="close-btn" class="btn" title="Cerrar menú" @click.prevent="closeMenu">
+            <button id="close-btn" class="btn" title="Cerrar menú (Esc)" @click.prevent="closeMenu">
                 <X id="close-icon" />
             </button>
         </div>
 
         <div id="options-menu">
-            <button id="calculator-btn" class="btn option-btn" title="Abrir calculadora"
+            <button id="calculator-btn" class="btn option-btn" title="Abrir calculadora (C)"
                 @click.prevent="openCalculator">
                 <Calculator id="calculator-icon" class="icon" />
                 <p class="btn-text"><u>C</u>alculadora</p>
             </button>
 
-            <button id="excel-btn" class="btn option-btn" title="Exportar a hoja de cálculo de Excel"
+            <button id="excel-btn" class="btn option-btn" title="Exportar a hoja de cálculo de Excel (E)"
                 @click.prevent="exportExcel">
                 <FileSpreadsheet id="excel-icon" class="icon" />
                 <p class="btn-text">Exportar a <u>E</u>xcel</p>
             </button>
 
-            <button id="pdf-btn" class="btn option-btn" title="Exportar a PDF para imprimir" @click.prevent="exportPDF">
+            <button id="pdf-btn" class="btn option-btn" title="Exportar a PDF para imprimir (P)"
+                @click.prevent="exportPDF">
                 <FileText id="pdf-icon" class="icon" />
                 <p class="btn-text">Exportar a <u>P</u>DF</p>
             </button>
 
-            <button id="import-btn" class="btn option-btn" title="Importar hoja de cálculo de Excel"
+            <button id="import-btn" class="btn option-btn" title="Importar hoja de cálculo de Excel (I)"
                 @click.prevent="importExcel">
                 <FileUp id="import-icon" class="icon" />
                 <p class="btn-text"><u>I</u>mportar Excel</p>
             </button>
 
-            <button id="battery-btn" class="btn option-btn" title="Modo de ahorro de batería"
+            <button id="battery-btn" class="btn option-btn" title="Modo de ahorro de batería (M)"
                 @click.prevent="toggleEcoMode">
                 <BatteryCharging id="battery-charging-icon" class="eco-mode-icon icon" v-if="!ecoMode" />
                 <BatteryFull id="battery-full-icon" class="eco-mode-icon icon" v-if="ecoMode" />
                 <p class="btn-text"><u>M</u>odo{{ ecoMode ? " Normal" : " Eco" }}</p>
             </button>
 
-            <button id="color-mode-btn" class="btn option-btn" title="Cambiar esquema de colores"
+            <button id="color-mode-btn" class="btn option-btn" title="Cambiar esquema de colores (O)"
                 @click.prevent="switchTheme">
                 <Sun id="sun-icon" class="color-mode-icon icon" v-if="theme == 'dark'" />
                 <Moon id="moon-icon" class="color-mode-icon icon" v-if="theme == 'light'" />
                 <p class="btn-text">Modo{{ theme == 'dark' ? " Clar" : " Oscur" }}<u>o</u></p>
             </button>
 
-            <button id="help-btn" class="btn option-btn" title="Abrir documento de ayuda">
+            <button id="help-btn" class="btn option-btn" title="Abrir documento de ayuda (A)">
                 <CircleHelp id="help-icon" class="icon" />
                 <p class="btn-text"><u>A</u>yuda</p>
             </button>

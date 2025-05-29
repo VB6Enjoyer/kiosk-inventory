@@ -210,7 +210,7 @@ onUnmounted(() => {
 
         <div id="hide-button-container">
             <button id="hide-button" :disabled="apiUnavailable"
-                :title="apiUnavailable ? 'No disponible actualmente' : 'Mostrar/ocultar panel'"
+                :title="apiUnavailable ? 'No disponible actualmente' : isHidden ? 'Mostrar panel (→)' : 'Ocultar panel (←)'"
                 @click="isHidden ? slideRight() : slideLeft()">
                 <component :is="isHidden ? PanelRightClose : PanelLeftClose" class="hide-icon" />
             </button>

@@ -152,15 +152,6 @@
       "purchaseDate": "N/A",
       "expiryDate": "2025-06-07",
       "cost": 0
-    },
-    {
-      "id": 24,
-      "name": "Test",
-      "description": "",
-      "quantity": 4,
-      "purchaseDate": "2025-05-01",
-      "expiryDate": "No expira",
-      "cost": 100
     }
   ],
   "theme": "dark"
