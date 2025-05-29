@@ -7,6 +7,7 @@ import { useFocusTrap } from '../utilities/focusTrap';
 import { useEcoModeStore } from '../stores/ecoMode';
 import { useToast } from 'vue-toastification';
 import { useCurrentlyOpenModalStore } from '../stores/openModal';
+import { useDemoModeStore } from '../stores/demoMode';
 
 //const currentTheme = ref<string>("");
 const modalRef = ref<HTMLElement | null>(null);
@@ -16,6 +17,7 @@ const theme = ref<string>("");
 const toast = useToast();
 const ecoModeStore = useEcoModeStore();
 const currentlyOpenModalStore = useCurrentlyOpenModalStore();
+const demoModeStore = useDemoModeStore();
 
 useFocusTrap(modalRef);
 
@@ -37,11 +39,11 @@ function exportPDF() {
 }
 
 function exportExcel() {
-    emit('export-excel');
+    if (!demoModeStore.demoMode) emit('export-excel');
 }
 
 function importExcel() {
-    emit('import-excel');
+    if (!demoModeStore.demoMode) emit('import-excel');
 }
 
 function switchTheme() {
@@ -57,6 +59,7 @@ function switchTheme() {
 }
 
 function toggleEcoMode() {
+    if (demoModeStore.demoMode) return;
     const storedValue = localStorage.getItem('eco');
     ecoMode.value = storedValue == "true" ? false : true;
     ecoModeStore.setEcoMode(ecoMode.value);
@@ -71,8 +74,9 @@ function toggleEcoMode() {
     }
 }
 
-function getHelp() {
-
+async function getHelp() {
+    //@ts-ignore
+    await window.electron.about();
 }
 
 function closeMenu() {
@@ -156,7 +160,7 @@ onUnmounted(() => {
             </button>
 
             <button id="excel-btn" class="btn option-btn" title="Exportar a hoja de cálculo de Excel (E)"
-                @click.prevent="exportExcel">
+                :disabled="demoModeStore.demoMode" @click.prevent="exportExcel">
                 <FileSpreadsheet id="excel-icon" class="icon" />
                 <p class="btn-text">Exportar a <u>E</u>xcel</p>
             </button>
@@ -168,13 +172,13 @@ onUnmounted(() => {
             </button>
 
             <button id="import-btn" class="btn option-btn" title="Importar hoja de cálculo de Excel (I)"
-                @click.prevent="importExcel">
+                :disabled="demoModeStore.demoMode" @click.prevent="importExcel">
                 <FileUp id="import-icon" class="icon" />
                 <p class="btn-text"><u>I</u>mportar Excel</p>
             </button>
 
             <button id="battery-btn" class="btn option-btn" title="Modo de ahorro de batería (M)"
-                @click.prevent="toggleEcoMode">
+                :disabled="demoModeStore.demoMode" @click.prevent="toggleEcoMode">
                 <BatteryCharging id="battery-charging-icon" class="eco-mode-icon icon" v-if="!ecoMode" />
                 <BatteryFull id="battery-full-icon" class="eco-mode-icon icon" v-if="ecoMode" />
                 <p class="btn-text"><u>M</u>odo{{ ecoMode ? " Normal" : " Eco" }}</p>
@@ -187,7 +191,7 @@ onUnmounted(() => {
                 <p class="btn-text">Modo{{ theme == 'dark' ? " Clar" : " Oscur" }}<u>o</u></p>
             </button>
 
-            <button id="help-btn" class="btn option-btn" title="Abrir documento de ayuda (A)">
+            <button id="help-btn" class="btn option-btn" title="Abrir documento de ayuda (A)" @click.prevent="getHelp">
                 <CircleHelp id="help-icon" class="icon" />
                 <p class="btn-text"><u>A</u>yuda</p>
             </button>

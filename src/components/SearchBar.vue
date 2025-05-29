@@ -283,7 +283,7 @@ input[type="search"]::-webkit-search-cancel-button {
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 670px) {
     #search-input {
         padding: 0px;
         padding-left: 27px;
@@ -310,7 +310,7 @@ input[type="search"]::-webkit-search-cancel-button {
         top: 3px;
         width: clamp(5%, 15vw, 15%);
         font-size: 0.6rem;
-        text-wrap: wrap;
+        text-wrap: wrap !important;
     }
 }
 
@@ -338,7 +338,6 @@ input[type="search"]::-webkit-search-cancel-button {
 
     #advanced-search-btn {
         padding: 0 auto;
-        font-size: 0.75rem;
         white-space: nowrap;
         flex-shrink: 0;
     }

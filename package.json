@@ -1,7 +1,7 @@
 {
   "name": "kiosk-inventory",
   "private": true,
-  "version": "0.0.1",
+  "version": "1.0 Beta",
   "type": "module",
   "main": "electron-main.mjs",
   "scripts": {

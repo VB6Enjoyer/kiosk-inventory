@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 import { PanelLeftClose, PanelRightClose } from 'lucide-vue-next';
 import { useCurrentlyOpenModalStore } from '../stores/openModal';
+import { useDemoModeStore } from '../stores/demoMode';
 
 const oficial = ref(0);
 const blue = ref(0);
@@ -17,11 +18,14 @@ const uruguayo = ref(0);
 const isHidden = ref<boolean>(false);
 const dollarContainer = ref<HTMLElement | null>(null);
 const apiUnavailable = ref<boolean>(false);
+const hideButton = ref<HTMLElement | null>(null);
 
 let intervalId: number | undefined;
 let keydownListener: ((event: KeyboardEvent) => void) | undefined;
+let resizeListener: (() => void) | undefined;
 
 const currentlyOpenModalStore = useCurrentlyOpenModalStore();
+const demoModeStore = useDemoModeStore();
 
 async function checkApiStatus() {
     try {
@@ -55,22 +59,26 @@ function getValues(apiUsed: string) {
             .then(response => {
                 oficial.value = response.data[0].venta;
                 blue.value = response.data[1].venta;
-                bolsa.value = response.data[2].venta;
-                contadoConLiqui.value = response.data[3].venta;
-                mayorista.value = response.data[4].venta;
-                cripto.value = response.data[5].venta;
-                tarjeta.value = response.data[6].venta;
+                if (!demoModeStore.demoMode) {
+                    bolsa.value = response.data[2].venta;
+                    contadoConLiqui.value = response.data[3].venta;
+                    mayorista.value = response.data[4].venta;
+                    cripto.value = response.data[5].venta;
+                    tarjeta.value = response.data[6].venta;
+                }
             })
             .catch(error => {
                 console.error(error);
             });
 
-        axios.get("https://dolarapi.com/v1/cotizaciones")
-            .then(response => {
-                euro.value = response.data[1].venta;
-                real.value = response.data[2].venta;
-                uruguayo.value = response.data[4].venta;
-            });
+        if (!demoModeStore.demoMode) {
+            axios.get("https://dolarapi.com/v1/cotizaciones")
+                .then(response => {
+                    euro.value = response.data[1].venta;
+                    real.value = response.data[2].venta;
+                    uruguayo.value = response.data[4].venta;
+                });
+        }
 
         apiUnavailable.value = false;
         if (isHidden.value) slideRight();
@@ -79,15 +87,17 @@ function getValues(apiUsed: string) {
             .then(response => {
                 oficial.value = response.data.usd.oficial.venta.split("ARS")[0].trim();
                 blue.value = response.data.usd.blue.venta.split("ARS")[0].trim();
-                bolsa.value = response.data.usd.MEP.venta.split("ARS")[0].trim();
-                contadoConLiqui.value = response.data.usd.CCL.venta.split("ARS")[0].trim();
-                mayorista.value = response.data.usd.Mayorista.venta.split("ARS")[0].trim();
-                cripto.value = response.data.usd.Cripto.venta.split("ARS")[0].trim();
-                tarjeta.value = response.data.usd.Tarjeta.venta.split("ARS")[0].trim();
+                if (!demoModeStore.demoMode) {
+                    bolsa.value = response.data.usd.MEP.venta.split("ARS")[0].trim();
+                    contadoConLiqui.value = response.data.usd.CCL.venta.split("ARS")[0].trim();
+                    mayorista.value = response.data.usd.Mayorista.venta.split("ARS")[0].trim();
+                    cripto.value = response.data.usd.Cripto.venta.split("ARS")[0].trim();
+                    tarjeta.value = response.data.usd.Tarjeta.venta.split("ARS")[0].trim();
 
-                euro.value = response.data.euro.venta.split("ARS")[0].trim();
-                real.value = response.data.real.venta.split("ARS")[0].trim();
-                uruguayo.value = response.data.uru.venta.split("ARS")[0].trim();
+                    euro.value = response.data.euro.venta.split("ARS")[0].trim();
+                    real.value = response.data.real.venta.split("ARS")[0].trim();
+                    uruguayo.value = response.data.uru.venta.split("ARS")[0].trim();
+                }
             })
             .catch(error => {
                 console.error(error);
@@ -106,10 +116,18 @@ function formatCurrency(value: number): string {
         : '';
 }
 
+function applyHideTransform() {
+    if (dollarContainer.value && hideButton.value) {
+        const containerWidth = dollarContainer.value.offsetWidth;
+        const buttonWidth = hideButton.value.offsetWidth;
+        dollarContainer.value.style.transform = `translateX(-${containerWidth - buttonWidth}px)`;
+        dollarContainer.value.style.transition = 'transform 0.4s cubic-bezier(0.4, 1, 0.2, 1)';
+    }
+}
+
 function slideLeft() {
-    if (dollarContainer.value) {
-        dollarContainer.value.style.transform = 'translateX(-96.33%)';
-        dollarContainer.value.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+    if (dollarContainer.value && hideButton.value) {
+        applyHideTransform();
         isHidden.value = true;
     }
 }
@@ -133,6 +151,14 @@ onMounted(() => {
         }
     };
     window.addEventListener("keydown", keydownListener);
+
+    // Listen for window resize to reapply transform if hidden
+    resizeListener = () => {
+        if (isHidden.value) {
+            applyHideTransform();
+        }
+    };
+    window.addEventListener("resize", resizeListener);
 
     checkApiStatus();
     intervalId = window.setInterval(() => {
@@ -167,49 +193,65 @@ onUnmounted(() => {
                 <h4 v-if="blue > 0" class="exchange-value">${{ formatCurrency(blue) }}</h4>
             </div>
 
-            <div id="bolsa-container" class="exchange-container" title="Dolar Mercado Electrónico de Pagos">
+            <div id="bolsa-container" class="exchange-container" title="Dolar Mercado Electrónico de Pagos" :class="{
+                'hidden': demoModeStore.demoMode
+            }">
                 <h2 id="bolsa-header" class="exchange-title">MEP</h2>
                 <h4 v-if="bolsa > 0" class="exchange-value">${{ formatCurrency(bolsa) }}</h4>
             </div>
 
-            <div id="ccl-container" class="exchange-container" title="Dólar Contado con Liqui">
+            <div id="ccl-container" class="exchange-container" title="Dólar Contado con Liqui" :class="{
+                'hidden': demoModeStore.demoMode
+            }">
                 <h2 id="contadoConLiqui-header" class="exchange-title">CCL</h2>
                 <h4 v-if="contadoConLiqui > 0" class="exchange-value">${{ formatCurrency(contadoConLiqui) }}</h4>
             </div>
 
-            <div id="mayorista-container" class="exchange-container" title="Dólar mayorista">
+            <div id="mayorista-container" class="exchange-container" title="Dólar mayorista" :class="{
+                'hidden': demoModeStore.demoMode
+            }">
                 <h2 id="mayorista-header" class="exchange-title">Mayorista</h2>
                 <h4 v-if="mayorista > 0" class="exchange-value">${{ formatCurrency(mayorista) }}</h4>
             </div>
 
-            <div id="cripto-container" class="exchange-container" title="Dólar cripto (Stablecoin)">
+            <div id="cripto-container" class="exchange-container" title="Dólar cripto (Stablecoin)" :class="{
+                'hidden': demoModeStore.demoMode
+            }">
                 <h2 id="cripto-header" class="exchange-title">Cripto</h2>
                 <h4 v-if="mayorista > 0" class="exchange-value">${{ formatCurrency(cripto) }}</h4>
             </div>
 
-            <div id="tarjeta-container" class="exchange-container" title="Dólar tarjeta">
+            <div id="tarjeta-container" class="exchange-container" title="Dólar tarjeta" :class="{
+                'hidden': demoModeStore.demoMode
+            }">
                 <h2 id="tarjeta-header" class="exchange-title">Tarjeta</h2>
                 <h4 v-if="mayorista > 0" class="exchange-value">${{ formatCurrency(tarjeta) }}</h4>
             </div>
 
-            <div id="euro-container" class="exchange-container" title="Euro oficial">
+            <div id="euro-container" class="exchange-container" title="Euro oficial" :class="{
+                'hidden': demoModeStore.demoMode
+            }">
                 <h2 id="euro-header" class="exchange-title">Euro</h2>
                 <h4 v-if="euro > 0" class="exchange-value">${{ formatCurrency(euro) }}</h4>
             </div>
 
-            <div id="real-container" class="exchange-container" title="Real brasileño oficial">
+            <div id="real-container" class="exchange-container" title="Real brasileño oficial" :class="{
+                'hidden': demoModeStore.demoMode
+            }">
                 <h2 id="real-header" class="exchange-title">Real</h2>
                 <h4 v-if="real > 0" class="exchange-value">${{ formatCurrency(real) }}</h4>
             </div>
 
-            <div id="uruguayo-container" class="exchange-container" title="Peso uruguayo oficial">
+            <div id="uruguayo-container" class="exchange-container" title="Peso uruguayo oficial" :class="{
+                'hidden': demoModeStore.demoMode
+            }">
                 <h2 id="uruguayo-header" class="exchange-title">Uruguayo</h2>
                 <h4 v-if="uruguayo > 0" class="exchange-value">${{ formatCurrency(uruguayo) }}</h4>
             </div>
         </span>
 
         <div id="hide-button-container">
-            <button id="hide-button" :disabled="apiUnavailable"
+            <button id="hide-button" ref="hideButton" :disabled="apiUnavailable"
                 :title="apiUnavailable ? 'No disponible actualmente' : isHidden ? 'Mostrar panel (→)' : 'Ocultar panel (←)'"
                 @click="isHidden ? slideRight() : slideLeft()">
                 <component :is="isHidden ? PanelRightClose : PanelLeftClose" class="hide-icon" />
@@ -373,6 +415,11 @@ onUnmounted(() => {
     color: var(--uruguayo-exchange-color);
 }
 
+.hidden {
+    width: 0 !important;
+    padding: 0 !important;
+    visibility: hidden !important;
+}
 
 @media (max-width: 1380px) {
     #dollar-container {
@@ -429,7 +476,7 @@ onUnmounted(() => {
 
     .exchange-container {
         height: 53px;
-        min-width: 70px;
+        width: 70px;
         padding: 0px;
     }
 
@@ -474,7 +521,7 @@ onUnmounted(() => {
 
     .exchange-container {
         height: 48px;
-        min-width: 60px;
+        width: 60px;
         padding: 0px 2px;
     }
 

@@ -1,9 +1,10 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { Low } from 'lowdb';
 import { JSONFile } from 'lowdb/node';
 import fs from "fs"
+import os from 'os';
 
 // Set up Lowdb
 const __filename = fileURLToPath(import.meta.url);
@@ -160,6 +161,41 @@ ipcMain.handle('minimize-calculator', () => {
     }
     return true;
 });
+
+ipcMain.handle('about', async () => {
+    const packageJsonPath = path.join(__dirname, 'package.json');
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+
+    const buildDate = new Date('2025-05-28');
+    const now = new Date();
+    const daysAgo = Math.floor((now - buildDate) / (1000 * 60 * 60 * 24));
+
+    dialog.showMessageBox({
+        type: 'info',
+        title: 'Acerca de',
+        message: `Sistema de gestión de inventario`,
+        detail: `Version: ${packageJson.version}
+Fecha: ${buildDate.toISOString().split('T')[0]} (hace ${daysAgo} días)
+electron: ${process.versions.electron}
+vue: ${packageJson.dependencies.vue.replace("^", "")}
+chrome: ${process.versions.chrome}
+node: ${process.versions.node}
+v8: ${process.versions.v8}
+OS: ${os.type()} ${os.arch()} ${os.release()}\n
+Desarrollado por J. I. Núñez (juaninun17@gmail.com).`
+    });
+
+    let helpFilePath;
+    if (!app.isPackaged) {
+        helpFilePath = path.join(__dirname, './src/assets/help/ayuda.html');
+    } else {
+        helpFilePath = path.join(__dirname, 'assets/help/ayuda.html');
+    }
+
+    await shell.openPath(helpFilePath);
+    return true;
+})
+
 app.on('window-all-closed', function () {
     if (process.platform !== 'darwin') app.quit();
 });

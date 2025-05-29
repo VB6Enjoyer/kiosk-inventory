@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es-ar">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Sistema de Gestión de Inventario - Guía</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="icon" href="./favicon.ico" type="image/x-icon">
+</head>
+
+<body>
+    <main>
+        <div id="headers">
+            <h1 id="software-title">Sistema de Gestión de Inventario<br>
+                <span id="guide-title">Guía de uso</span>
+            </h1>
+        </div>
+
+        <h2 id="references-header">Referencias</h2>
+        <nav id="references">
+            <ol>
+                <li><a>Introducción</a></li>
+                <li><a>Manipulación de productos</a></li>
+                <li><a>Búsqueda y filtrado de productos</a></li>
+                <li><a>Menú de opciones</a></li>
+            </ol>
+        </nav>
+
+        <section id="introduction-section">
+            <h2>1. Introducción</h2>
+            <div id="introduction-body">
+                <p id="introduction-first-paragraph" class="paragraph">Este programa es un <strong>sistema de gestión de
+                        inventario</strong> desarrollado para uso en negocios pequeños y medianos. La intención del
+                    mismo es permitir al usuario guardar, cargar, modificar y
+                    eliminar
+                    productos según su necesidad. Estos productos se almacenan localmente en la computadora del usuario.
+                    El programa también incluye varias otras cualidades y especificaciones
+                    que
+                    se detallaran a lo largo de la guía.</p>
+
+                <img id="introduction-image" class="image" width="50%" height="50%" loading="lazy"
+                    alt="Imagen del programa al iniciarse por primera vez, con indicaciones de sus distintas partes"
+                    src="./img/1-introduction.jpg">
+                <figcaption id="introduction-image-caption" class="image-caption">Imágen del programa al iniciarse por
+                    primera vez.
+                </figcaption>
+
+                <p id="introduction-second-paragraph" class="paragraph">En la imágen de arriba se muestra es como el
+                    programa se ve
+                    al iniciarse por primera vez. Las distintas partes del programa están enumeradas. A continuación se
+                    explica cada una.</p>
+
+                <div id="introduction-image-explanation">
+                    <h3 class="introduction-h3">1. Tabla</h3>
+                    <p id="introduction-table-paragraph" class="introduction-table-paragraph paragraph">Aquí se muestra
+                        la
+                        tabla que contiene todos los productos que se añaden utilizando el programa. Al iniciar el
+                        programa por primera vez, la tabla normalmente estará vacía. Tras añadir un producto, se podra
+                        usar
+                        la tabla para consultar su:
+                    <ul id="introduction-table-list">
+                        <li class="introduction-table-list-item">Nombre</li>
+                        <li class="introduction-table-list-item">Descripción</li>
+                        <li class="introduction-table-list-item">Cantidad</li>
+                        <li class="introduction-table-list-item">Fecha de compra</li>
+                        <li class="introduction-table-list-item">Fecha de vencimiento</li>
+                        <li class="introduction-table-list-item">Costo</li>
+                        <li class="introduction-table-list-item">Lista de acciones</li>
+                    </ul>
+
+                    En la sección de <a>manipulación de productos</a> se explica con más detalle las funciones
+                    y
+                    las partes de la tabla.
+                    </p>
+
+                    <h3 class="introduction-h3">2. Encabezados de la tabla</h3>
+                    <p id="introduction-table-header-paragraph" class="introduction-table-paragraph paragraph">Aquí se
+                        muestran los encabezados para las distintas columnas de la tabla. Al hacer clic en estos mismos,
+                        el
+                        usuario puede <strong>ordenar</strong> la tabla de manera ascendente o descendiente en base a
+                        los
+                        valores de los productos.</p>
+
+                    <h3 class="introduction-h3">3. Botón para añadir producto</h3>
+                    <p id="introduction-add-product-button-paragraph" class="introduction-table-paragraph paragraph">Al
+                        presionar este botón, el usuario verá un menu que le permitirá <strong>añadir un nuevo
+                            producto</strong> a la base de datos. Para más información, consulte la sección
+                        de
+                        <a>manipulación de datos de productos</a>.
+                    </p>
+
+                    <h3 class="introduction-h3">4. Cuadro de búsqueda</h3>
+                    <p id="introduction-search-paragraph" class="introduction-table-paragraph paragraph">Este cuadro de
+                        texto le permite al usuario filtrar y cargar los productos de la base de datos de acuerdo a su
+                        nombre y descripción. Para más información, consulte la sección de <a>búsqueda y filtrado de
+                            productos</a>.</p>
+
+                    <h3 class="introduction-h3">5. Botón de búsqueda avanzada</h3>
+                    <p id="introduction-advanced-search-paragraph" class="introduction-table-paragraph paragraph">El
+                        botón de
+                        búsqueda avanzada abre un menú donde el usuario puede especificar cualquier combinación de datos
+                        para filtrar y cargar productos específicos de la base de datos. Para más información, consulte
+                        la sección de <a>búsqueda y filtrado de
+                            productos</a>.</p>
+
+                    <h3 class="introduction-h3">6. Botones de filtrado según fecha de vencimiento</h3>
+                    <p id="introduction-expiry-filtering-paragraph" class="introduction-table-paragraph paragraph">Los
+                        tres botones en pantalla le permiten al usuario filtrar productos según su fecha de vencimiento:
+                    <ul id="introduction-table-list">
+                        <li class="red-text">Entre una y dos semanas para vencer</li>
+                        <li class="yellow-text">Una semana para vencer o menos</li>
+                        <li>Vencido</li>
+                    </ul>
+
+                    Para más información, consulte
+                    la sección de <a>búsqueda y filtrado de
+                        productos</a>.
+                    </p>
+
+                    <h3 class="introduction-h3">7. Contenedor de tipos de cambio</h3>
+                    <p id="introduction-exchange-paragraph" class="introduction-table-paragraph paragraph">Esta tarjeta
+                        retractable contiene los <strong>valores de venta</strong> en la última hora de los siguientes
+                        tipos de cambio:
+                    <ul id="introduction-table-list">
+                        <li>Dólar oficial</li>
+                        <li>Dólar blue</li>
+                        <li>Dólar MEP (Mercado Electrónico de Pagos)</li>
+                        <li>Dólar CCL (Contado con Liqui)</li>
+                        <li>Dólar mayorista</li>
+                        <li>Dólar cripto (USDC Stablecoin)</li>
+                        <li>Dólar tarjeta</li>
+                        <li>Euro oficial</li>
+                        <li>Real Brasileño oficial</li>
+                        <li>Peso Uruguayo oficial</li>
+                    </ul>
+
+                    El usuario puede presionar el botón blanco al final de la tarjeta para ocultar y mostrar la misma.
+                    Los valores de cambio provienen de fuentes externas y se actualizan cada una hora tras abrir el
+                    programa. En el caso de no tener conexión a internet, o de que los tipos de cambio no estén
+                    disponible, la tarjeta se oculta, ya que los valores que
+                    utiliza se obtienen a traves de servidores externos que requieren de conexión constante a la red.
+                    </p>
+
+                    <h3 class="introduction-h3">8. Menú de opciones</h3>
+                    <p id="introduction-menu-paragraph" class="introduction-table-paragraph paragraph">Este botón abre
+                        un menú con múltiples opciones y especificaciones del programa las cuales el usuario puede usar.
+                        Para más información, consulte la sección de <a>menú de opciones</a>.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="data-handling-section">
+            <h2>2. Manipulación de productos</h2>
+        </section>
+
+        <section id="search-section">
+            <h2>3. Búsqueda y filtrado de productos</h2>
+        </section>
+
+        <section id="options-section">
+            <h2>4. Menú de opciones</h2>
+        </section>
+    </main>
+    <script src="index.js"></script>
+</body>
+
+</html>

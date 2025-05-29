@@ -18,6 +18,7 @@ import { exportToExcel, importFromExcel } from '../utilities/excelHandler.ts';
 import "../style.css"
 import { useEcoModeStore } from '../stores/ecoMode.ts';
 import { useCurrentlyOpenModalStore } from '../stores/openModal.ts';
+import { useDemoModeStore } from '../stores/demoMode.ts';
 
 // All //@ts-ignore are to prevent a pesky error which ignores that "window" refers to the Electron window
 // TODO Do extensive testing and write down any bugs to fix
@@ -59,6 +60,7 @@ let keydownListener: ((event: KeyboardEvent) => void) | undefined;
 const toast = useToast();
 const ecoModeStore = useEcoModeStore();
 const currentlyOpenModalStore = useCurrentlyOpenModalStore();
+const demoModeStore = useDemoModeStore();
 
 const sortFunctions = {
     id: (a: Product, b: Product) => a.id - b.id,
@@ -306,6 +308,8 @@ function clearFilters() {
 async function loadProducts(keepSort: boolean = false) {
     // @ts-ignore
     productsBackup.value = await window.api.loadProducts();
+
+    if (demoModeStore.demoMode) productsBackup.value = productsBackup.value.splice(0, demoModeStore.productLimit);
 
     isSearching ? debouncedSearch.value(searchQuery.value) : products.value = [...productsBackup.value];
 
@@ -865,7 +869,8 @@ watch(() => ecoModeStore.ecoMode, () => {
                 </div>
 
                 <button @click="openAddProductModal" id="open-modal-btn" class="btn btn-success"
-                    title="Abrir menú de creación de producto (+/A)">Añadir
+                    title="Abrir menú de creación de producto (+/A)"
+                    :disabled="demoModeStore.demoMode && productsBackup.length >= demoModeStore.productLimit">Añadir
                     producto</button>
 
                 <div v-if="isAddProductModalOpen" class="modal-overlay">
@@ -1045,6 +1050,7 @@ watch(() => ecoModeStore.ecoMode, () => {
                 </div>
             </div>
 
+
             <ConfirmationDialog class="modal-ov" v-if="isDeleting"
                 :message="'¿Estás seguro que querés eliminar este producto?'" :isVisible="isDeleting" blueText="Si"
                 :isImporting="false" @confirm="confirmDelete" @cancel="cancelDelete" />
@@ -1053,6 +1059,7 @@ watch(() => ecoModeStore.ecoMode, () => {
                 :isVisible="isImporting" blueText="Agregar" redText="Reemplazar" :isImporting="true"
                 @confirm="addFromImport" @cancel="cancelImport" @replace="replaceFromImport" />
         </div>
+        <span id="demo-mode-message" v-if="demoModeStore.demoMode">Demo mode</span>
     </div>
 </template>
 
@@ -1386,6 +1393,16 @@ th {
 
 .delete-btn:hover {
     box-shadow: 0 0 2px 0 #b8293e;
+}
+
+#demo-mode-message {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    padding-left: 5px;
+    padding-top: 5px;
+    font-size: clamp(0.75em, 1vw, 1em);
+    user-select: none;
 }
 
 .pdf-export #table-container {

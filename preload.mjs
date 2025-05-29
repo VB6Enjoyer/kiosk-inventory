@@ -13,5 +13,6 @@ contextBridge.exposeInMainWorld('electron', {
     openCalculator: () => ipcRenderer.invoke('open-calculator'),
     closeCalculator: () => ipcRenderer.invoke('close-calculator'),
     minimizeCalculator: () => ipcRenderer.invoke('minimize-calculator'),
-    closeApp: () => ipcRenderer.invoke('close-app')
+    closeApp: () => ipcRenderer.invoke('close-app'),
+    about: () => ipcRenderer.invoke('about')
 })

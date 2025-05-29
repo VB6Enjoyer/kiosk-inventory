@@ -47,6 +47,7 @@ export default {
 <template>
   <div id="app">
     <router-view id="view" class="wrapper" />
+
   </div>
 </template>
 

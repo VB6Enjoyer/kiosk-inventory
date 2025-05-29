@@ -26,5 +26,12 @@ export const electronAPI = {
         }
         console.warn('Electron API not available, running in browser mode');
         return Promise.resolve(false);
+    },
+    about: () => {
+        if (window.electron?.about) {
+            return window.electron.about();
+        }
+        console.warn('Electron API not available, running in browser mode');
+        return Promise.resolve(false);
     }
 };
